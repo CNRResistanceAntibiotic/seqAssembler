@@ -3,7 +3,7 @@ import os
 import subprocess
 
 
-def subset(in_f, in_r, output_dir, subset_size):
+def subset(in_f, in_r, output_dir):
     # https://github.com/lh3/seqtk/
     # Subsample 10000 read pairs from two large paired FASTQ files (remember to use the same random seed to keep
     # pairing):
@@ -85,7 +85,7 @@ def trimmomatic_call(in_f, in_r, output_dir, read_type, trim_c, trim_l, trim_t, 
         out_str = subprocess.check_output(cmd, shell=True)
         print(out_str)
         cmd = 'cat {0} {1} > {2}'.format(trim_list[1], trim_list[3], trim_list[4])
-        out_str = subprocess.check_output(cmd, shell=True)
+        subprocess.check_output(cmd, shell=True)
 
         # remove files
         os.remove(trim_list[1])
@@ -97,30 +97,30 @@ def trimmomatic_call(in_f, in_r, output_dir, read_type, trim_c, trim_l, trim_t, 
     return trim_list
 
 
-def pre_main(args):
-    in_f = args.in_f
-    in_r = args.in_r
-    subset_size = args.subset_size
+def pre_main(arguments):
+    in_f = arguments.in_f
+    in_r = arguments.in_r
+    subset_size = arguments.subset_size
     if in_r == '':
         read_type = 'se'
         subset_size = 'all'
     else:
         read_type = 'pe'
-    output_dir = args.output_dir
-    trimmomatic = args.trimmomatic
-    sickle = args.sickle
-    trim_c = args.trimc
-    trim_l = args.triml
-    trim_t = args.trimt
-    trim_w = args.trimw
-    trim_q = args.trimq
-    trim_m = args.trimm
-    sickle_t = args.sicklet
-    sickle_q = args.sickleq
-    sickle_l = args.sicklel
-    sickle_g = args.sickleg
-    sickle_x = args.sicklex
-    sickle_n = args.sicklen
+    output_dir = arguments.output_dir
+    trimmomatic = arguments.trimmomatic
+    sickle = arguments.sickle
+    trim_c = arguments.trimc
+    trim_l = arguments.triml
+    trim_t = arguments.trimt
+    trim_w = arguments.trimw
+    trim_q = arguments.trimq
+    trim_m = arguments.trimm
+    sickle_t = arguments.sicklet
+    sickle_q = arguments.sickleq
+    sickle_l = arguments.sicklel
+    sickle_g = arguments.sickleg
+    sickle_x = arguments.sicklex
+    sickle_n = arguments.sicklen
     main(in_f, in_r, output_dir, subset_size, read_type, trim_c, trim_l, trim_t, trim_w, trim_q, trim_m, sickle_t,
          sickle_q, sickle_l, sickle_g, sickle_x, sickle_n, trimmomatic, sickle)
 
@@ -139,7 +139,7 @@ def main(in_f, in_r, output_dir, subset_size, read_type, trim_c, trim_l, trim_t,
     if subset_size == 'all':
         input_list = [in_f, in_r]
     else:
-        input_list = subset(in_f, in_r, output_dir, subset_size)
+        input_list = subset(in_f, in_r, output_dir)
 
     # PARSE TRIMMOMATIC ARGUMENTS FOR READ TRIMMING
     if trimmomatic:
@@ -206,8 +206,8 @@ def run():
                         help='sickle option x')
     # VERSION
     parser.add_argument('-V', '--version', action='version', version='rgi-' + version(), help="Prints version number")
-    args = parser.parse_args()
-    return args
+
+    return parser.parse_args()
 
 
 if __name__ == "__main__":

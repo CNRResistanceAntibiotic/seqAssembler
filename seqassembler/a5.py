@@ -1,7 +1,6 @@
 #!/usr/bin/python
 import glob
 import os
-import re
 import subprocess
 import argparse
 from shutil import rmtree
@@ -31,10 +30,10 @@ def launch(sample, file1, file2, out_dir):
         # set current directory to a5 work directory
         os.chdir(out_dir)
 
-        args = " --end=5 {0} {1} {2}".format(file1, file2, sample)
+        arguments = " --end=5 {0} {1} {2}".format(file1, file2, sample)
 
         # launch a5
-        subprocess.check_call('a5_pipeline.pl' + args, shell=True)
+        subprocess.check_call('a5_pipeline.pl' + arguments, shell=True)
 
         current_dir = os.getcwd()
         # remove useless files
@@ -58,7 +57,8 @@ def launch(sample, file1, file2, out_dir):
                 header = 'ID\tNombre de contigs\tNombre de scaffolds\tTaille du genome\tScaffold le plus long\tN50\t' \
                          'Nombre de reads\tNombre de reads conserves\t% de reads conservees\tNombre de nucleotides\t' \
                          'Nombre de nucleotides conserves\t% de nucleotides conserves\t' \
-                         'Profondeur moyenne\tProfondeur moyenne filtree\tProfondeur mediane\tProfondeur au 10eme percentile\t' \
+                         'Profondeur moyenne\tProfondeur moyenne filtree\tProfondeur mediane\t' \
+                         'Profondeur au 10eme percentile\t' \
                          'Nombre de bases >= Q40\tGC %\n'
 
             with open(out_stat_file, '{0}'.format(IO_type)) as f:
@@ -70,11 +70,11 @@ def launch(sample, file1, file2, out_dir):
                         f.write('\t'.join(line.split('\t')[:-1]) + '\n')
 
 
-def pre_main(args):
-    file1 = args.file1
-    file2 = args.file2
-    sample = args.sample
-    out_dir = args.outdir
+def pre_main(arguments):
+    file1 = arguments.file1
+    file2 = arguments.file2
+    sample = arguments.sample
+    out_dir = arguments.outdir
     main(file1, file2, sample, out_dir)
 
 
@@ -99,8 +99,7 @@ def run():
     parser.add_argument('-id', '--sampleName', dest='sample', help="ID of sample")
     parser.add_argument('-out', '--outputDir', dest='outdir', help="Name of output directory")
     parser.add_argument('-V', '--version', action='version', version='rgi-' + version(), help="Prints version number")
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 
 
 if __name__ == '__main__':

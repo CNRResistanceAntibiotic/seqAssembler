@@ -7,11 +7,10 @@ import argparse
 from shutil import copy2
 
 from Bio import SeqIO
-import time
 
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 
-from seqassembler.scripts import a5, fasta2bam, bam2stats
+from seqassembler import a5, fasta2bam, bam2stats
 
 install_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -235,8 +234,8 @@ def select_assembly(assembler, job_dir, sample, min_size, input_assembler_list):
 
     copy = True
 
-    # check if in case of two or more assembler called wich is the best assembly
-    if os.path.exists(destination_file) and len(input_assembler_list)>=2 :
+    # check if in case of two or more assembler called wich is the best assembly
+    if os.path.exists(destination_file) and len(input_assembler_list) >= 2:
         # get N50
         s_n50 = s_quality_dic['N50']
 
@@ -266,18 +265,18 @@ def select_assembly(assembler, job_dir, sample, min_size, input_assembler_list):
         rec_list = []
 
         print('\nThe assembly contigs are going to be rename in "ctg_/d+" format')
-        # get id of sorted by length the contigs
+        # get id_contig of sorted by length the contigs
         with open(destination_file, 'r') as f:
             len_and_ids = sorted(((len(seq), title.split(None, 1)[0]) for
                                   title, seq in SimpleFastaParser(f)), reverse=True)
-            ids = [id for (length, id) in len_and_ids]
+            ids = [id_contig for (length, id_contig) in len_and_ids]
             del len_and_ids  # free this on memory
 
         with open(destination_file, 'r') as f:
             n = 0
             records = SeqIO.to_dict(SeqIO.parse(f, 'fasta'))
-            for id in ids:
-                rec = records.get(id)
+            for id_contig in ids:
+                rec = records.get(id_contig)
                 if len(rec.seq) >= min_size:
                     n += 1
                     rec.id = 'ctg_{0}'.format(n)

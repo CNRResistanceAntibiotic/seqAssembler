@@ -59,17 +59,17 @@ def launch(plasmid, cv, pe_file1, pe_file2, s_files, pacbio, sanger, trcontig, u
             rmtree(file)
 
 
-def pre_main(args):
-    pe_file1 = args.pefile1
-    pe_file2 = args.pefile2
-    s_files = args.upfiles.split(',')
-    pacbio = args.pacbio
-    sanger = args.sanger
-    tr_contig = args.trcontig
-    un_contig = args.uncontig
-    out_dir = args.outdir
-    plasmid = args.plasmid
-    cv = args.cv
+def pre_main(arguments):
+    pe_file1 = arguments.pefile1
+    pe_file2 = arguments.pefile2
+    s_files = arguments.upfiles.split(',')
+    pacbio = arguments.pacbio
+    sanger = arguments.sanger
+    tr_contig = arguments.trcontig
+    un_contig = arguments.uncontig
+    out_dir = arguments.outdir
+    plasmid = arguments.plasmid
+    cv = arguments.cv
     main(pe_file1, pe_file2, s_files, pacbio, sanger, tr_contig, un_contig, out_dir, plasmid, cv)
 
 
@@ -107,8 +107,7 @@ def run():
                              ' [default: \'off\']')
     parser.add_argument('-o', '--outputDir', dest='outdir', action='store', help="Name of output directory")
     parser.add_argument('-V', '--version', action='version', version='rgi-' + version(), help="Prints version number")
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 
 
 if __name__ == '__main__':

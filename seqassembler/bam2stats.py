@@ -29,7 +29,6 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
         df = pd.DataFrame()
         for ctg in contigs:
             print('Bam data for {0} ({1}-bp) in process...'.format(ctg.id, len(ctg)))
-            out_prefix = os.path.join(out_dir, 'assembly_report')
 
             # Extract depth stats
             data = pysamstats.load_variation(bam, truncate=True, pad=True, max_depth=400, fafile=fas_file,

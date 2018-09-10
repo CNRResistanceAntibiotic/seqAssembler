@@ -6,7 +6,6 @@ import shutil
 def alignment_bwa(fasta_file, fastq_file1, fastq_file2, threads=8, force=False):
     sam_file = os.path.splitext(fasta_file)[0] + '.sam'
     bam_file = os.path.splitext(fasta_file)[0] + '.bam'
-    index_fasta_file = ""
     bwa_index_dir = os.path.join(os.path.dirname(bam_file), "bwa_index")
 
     if not os.path.exists(bwa_index_dir):
@@ -23,7 +22,8 @@ def alignment_bwa(fasta_file, fastq_file1, fastq_file2, threads=8, force=False):
         os.remove(index_fasta_file)
 
         # alignment
-        cmd = "$(which bwa) mem -t {0} {1} {2} {3} > {4}".format(threads, index_fasta_file, fastq_file1, fastq_file2, sam_file)
+        cmd = "$(which bwa) mem -t {0} {1} {2} {3} > {4}".format(threads, index_fasta_file, fastq_file1, fastq_file2,
+                                                                 sam_file)
         os.system(cmd)
     else:
         print('\nAlignment file {0} already done\n'.format(bam_file))
@@ -71,7 +71,7 @@ def split_unmapped_mapped_reads(bam_file, force):
         # remove unmapped reads BAM file
         os.remove("tmp_unmapped.bam")
 
-        # process BAM of mapped reads
+        # process BAM of mapped reads
         out_file = os.path.splitext(bam_file)[0] + '_droped.bam'
         cmd = "$(which samtools) view -b -F 4 {0} > {1}".format(bam_file, out_file)
         os.system(cmd)
@@ -142,4 +142,3 @@ def run():
 
 if __name__ == '__main__':
     run()
-
