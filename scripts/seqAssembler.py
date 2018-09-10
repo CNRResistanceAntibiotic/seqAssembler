@@ -445,7 +445,15 @@ def version():
 
 
 def run():
-    parser = argparse.ArgumentParser(description='seqAssembler - Version ' + version())
+    global usage
+
+    usage = "seqAssember.py [-fq fastq reads directory] [-o output directory] [-s sample file] "
+
+    parser = argparse.ArgumentParser(
+        prog='seqAssembler',
+        usage=usage,
+        description='SeqAssembler: pipeline CNR Resistance for Assembling - Version ' + version(),
+    )
     parser.add_argument('-fq', '--fqDir', dest="fqDir", help='The directory containing fastq or fastq.gz files')
     parser.add_argument('-o', '--outDir', dest="outDir", default='./', help="The output directory name")
     parser.add_argument('-s', '--sampleFile', dest="sampleFile",
