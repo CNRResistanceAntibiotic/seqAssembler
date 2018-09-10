@@ -16,7 +16,7 @@ setup(
     author_email='rbonnet@chu-clermontferrand.fr',
     url='https://github.com/CNRResistanceAntibiotic/seqAssembler',
     scripts=glob.glob('scripts/*'),
-    install_requires=['pandas', 'matplotlib', 'pysam==0.11.2.2', 'pysamstats'],
+    install_requires=[''],
     license='GPLv3',
     classifiers=[
         'Topic :: Scientific/Engineering :: Bio-Informatics',
