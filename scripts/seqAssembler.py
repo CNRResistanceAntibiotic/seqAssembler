@@ -4,13 +4,14 @@
 import os
 import subprocess
 import argparse
+import sys
 from shutil import copy2
 
 from Bio import SeqIO
 
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 
-from seqassembler import a5, fasta2bam, bam2stats
+from seqassembler import a5, fasta2bam, bam2stats, trimmer, spades
 
 install_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -72,23 +73,26 @@ def check_trimming(job_dir):
     return trimming_output_file_found
 
 
-def launch_trimming(job_dir, fq_list, subset, trimmer):
+def launch_trimming(job_dir, fq_list, subset, trimmer_type):
     job_dir = os.path.abspath(job_dir)
+    trimmer_dir = os.path.join(job_dir, "trimming_{0}".format(trimmer_type))
+
+    # create directory of trimming reads
+    if not os.path.exists(trimmer_dir):
+        os.mkdir(trimmer_dir)
 
     # TRIMMING
-    cmd = '{0} -f {1} -r {2} -o {3}'.format(os.path.join(install_dir, 'trimmer.py'), fq_list[0], fq_list[1], job_dir)
-
-    if subset != 'all':
-        cmd = cmd + ' -s {0}'.format(subset)
-    if trimmer == 'trimmomatic':
-        cmd = cmd + ' -tr'
+    tr = False
+    sk = False
+    if trimmer_type == 'trimmomatic':
+        tr = True
     else:
-        cmd = cmd + ' -sk'
+        sk = True
 
-    print('\nTrimming launcher:\n{0}\n'.format(cmd))
-    out_str = subprocess.check_output(cmd, shell=True)
-    print(out_str)
+    print('\nTrimming launcher:\nin_f {0} in_r {1} output_dir {2} subset_size {3} trimmomatic {4} sickle {5}\n'.format(fq_list[0], fq_list[1], trimmer_dir, subset, tr, sk))
+    trimmer.main(in_f=fq_list[0],  in_r=fq_list[1], output_dir=trimmer_dir, subset_size=subset, trimmomatic=tr, sickle=sk)
 
+    return trimmer_dir
 
 def launch_a5(sample, job_dir, fq_list, force):
     job_dir = os.path.abspath(job_dir)
@@ -102,13 +106,13 @@ def launch_a5(sample, job_dir, fq_list, force):
         print('\nAssembly a5 already done!\n')
 
 
-def launch_spades(assembler, sample, job_dir, fastq_dir, force):
+def launch_spades(assembler, sample, job_dir, fastq_dir, force, trimmer_dir):
     job_dir = os.path.abspath(job_dir)
     fastq_dir = os.path.abspath(fastq_dir)
     # SEARCH FASTQ AND FASTQ.GZ IN TRIM_DIR
     file_list = []
     for ext in ['.fastq', '.fastq.gz']:
-        for dir_path, dir_names, file_names in os.walk(job_dir):
+        for dir_path, dir_names, file_names in os.walk(trimmer_dir):
             file_list = file_list + [os.path.join(dir_path, filename) for filename in file_names if
                                      filename.endswith(ext)]
     file_list.sort()
@@ -149,64 +153,54 @@ def launch_spades(assembler, sample, job_dir, fastq_dir, force):
 
     # LAUNCH SPADES ASSEMBLER
     print('\nSPAdes launcher:', end=' ')
-    cmd = os.path.join(install_dir, 'spades.py')
+    #
+    plasmid = False
     if assembler == 'plasmidspades':
-        cmd = cmd + ' --plasmid'
+        plasmid = True
         print('Plasmid assembly with', end=' ')
     else:
         print('Genomic assembly with', end=' ')
 
     if not os.path.exists(os.path.join(job_dir, assembler)) or force:
 
+        tr_contig = ""
+        if long_reads != '':
+            tr_contig = long_reads
+
         if sk_pe_list:
             sk_pe_list.sort()
-            cmd = cmd + ' -1 {0} -2 {1}'.format(sk_pe_list[0], sk_pe_list[1])
             if sk_up_list:
-                cmd = cmd + ' -s {0}'.format(','.join(sk_up_list))
-            if long_reads != '':
-                cmd = cmd + ' -tc {0}'.format(long_reads)
-            cmd = cmd + ' -o {0}'.format(job_dir)
-            print('PE sickle files\n{0}'.format(cmd))
+                s_files = ','.join(sk_up_list)
+
+            print('PE sickle files\n{0} {1}'.format(sk_pe_list[0], sk_pe_list[1]))
             print('SPAdes in process...')
-            # os.system(cmd)
-            out_str = subprocess.check_output(cmd, shell=True)
-            print(out_str)
+
+            spades.main(pe_file1=sk_pe_list[0], pe_file2=sk_pe_list[1], out_dir=job_dir, plasmid=plasmid,
+                        s_files=s_files, tr_contig=tr_contig)
 
         elif tr_pe_list:
             tr_pe_list.sort()
-            cmd = cmd + ' -1 {0} -2 {1}'.format(tr_pe_list[0], tr_pe_list[1])
             if tr_up_list:
-                cmd = cmd + ' -s {0}'.format(','.join(tr_up_list))
-            if long_reads != '':
-                cmd = cmd + ' -tc {0}'.format(long_reads)
-            cmd = cmd + ' -o {0}'.format(job_dir)
-            print('PE Trimmomatic files\n{0}'.format(cmd))
+                s_files = ','.join(tr_up_list)
+
+            print('PE Trimmomatic files\n{0} {1}'.format(tr_pe_list[0], tr_pe_list[1]))
             print('SPAdes in process...')
-            # os.system(cmd)
-            out_str = subprocess.check_output(cmd, shell=True)
-            print(out_str)
+
+            spades.main(pe_file1=tr_pe_list[0], pe_file2=tr_pe_list[1], out_dir=job_dir, plasmid=plasmid,
+                        s_files=s_files, tr_contig=tr_contig)
 
         elif sk_se_list:
-            cmd = cmd + ' -s {0}'.format(sk_se_list[0])
-            if long_reads != '':
-                cmd = cmd + ' -tc {0}'.format(long_reads)
-            cmd = cmd + ' -o {0}'.format(job_dir)
-            print('SE sickle files\n{0}'.format(cmd))
+            s_files = sk_se_list[0]
+            print('SE sickle files\n{0}'.format(sk_se_list[0]))
             print('SPAdes in process...')
-            # os.system(cmd)
-            out_str = subprocess.check_output(cmd, shell=True)
-            print(out_str)
+            spades.main(out_dir=job_dir, plasmid=plasmid,
+                        s_files=s_files, tr_contig=tr_contig)
 
         elif tr_se_list:
-            cmd = cmd + ' -s {0}'.format(tr_se_list[0])
-            if long_reads != '':
-                cmd = cmd + ' -tc {0}'.format(long_reads)
-            cmd = cmd + ' -o {0}'.format(job_dir)
-            print('SE Trimmomatic files\n{0}'.format(cmd))
+            print('SE Trimmomatic files\n{0}'.format(tr_se_list))
             print('SPAdes in process...')
-            # os.system(cmd)
-            out_str = subprocess.check_output(cmd, shell=True)
-            print(out_str)
+            spades.main(out_dir=job_dir, plasmid=plasmid,
+                        s_files=tr_se_list, tr_contig=tr_contig)
     else:
         print('\nAssembly {0} already done!\n'.format(assembler))
 
@@ -247,7 +241,7 @@ def select_assembly(assembler, job_dir, sample, min_size, input_assembler_list):
         # check N50
         if s_n50 < d_n50:
             copy = False
-            print("More N bases than N50")
+            print("The assembly with {0} have a lower N50 than teh previous assembly done".format(assembler))
         elif s_n50 == d_n50:
             if s_N < d_n:
                 copy = False
@@ -286,8 +280,7 @@ def select_assembly(assembler, job_dir, sample, min_size, input_assembler_list):
 
         print('The assembly contigs have been renamed !')
     else:
-        print('The assembly was not selected as the best one by the N50 values')
-        exit(1)
+        print('The assembly with {} was not selected as the best one by the N50 values'.format(assembler))
     print('##  END  ##\n')
 
     return destination_file
@@ -416,11 +409,11 @@ def main(args):
                 trimming_output_file_found = check_trimming(job_dir)
                 if not trimming_output_file_found or args.force:
                     if trimmer in trimmer_list:
-                        launch_trimming(job_dir, fq_list, subset_size, trimmer)
+                        trimmer_dir = launch_trimming(job_dir, fq_list, subset_size, trimmer)
                     else:
                         print('\nTrimmer {0} not found\n'.format(trimmer))
                         exit(1)
-                launch_spades(assembler, sample, job_dir, fq_dir, args.force)
+                launch_spades(assembler, sample, job_dir, fq_dir, args.force, trimmer_dir)
 
             # Make Assembly file with filtering quality
             destination_file = select_assembly(assembler, job_dir, sample, int(args.minSize), input_assembler_list)
@@ -454,6 +447,7 @@ def run():
         usage=usage,
         description='SeqAssembler: pipeline CNR Resistance for Assembling - Version ' + version(),
     )
+
     parser.add_argument('-fq', '--fqDir', dest="fqDir", help='The directory containing fastq or fastq.gz files')
     parser.add_argument('-o', '--outDir', dest="outDir", default='./', help="The output directory name")
     parser.add_argument('-s', '--sampleFile', dest="sampleFile",
@@ -481,6 +475,10 @@ def run():
                         help="launch the identification of plasmid/chromosome contigs (default: False)")
     parser.add_argument('-F', '--force', dest="force", action='store_true', default=False,
                         help="Force file overwrite (default: False)")
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(1)
 
     args = parser.parse_args()
     main(args)

@@ -51,18 +51,15 @@ def launch(plasmid, cv, pe_file1, pe_file2, s_files, pacbio, sanger, trcontig, u
     out_str = subprocess.check_output(cmd, shell=True)
     print(out_str)
 
-    for item in ['corrected', 'K*', 'tmp', 'misc', 'mismatch*']:
-        file = os.path.join(ass_dir, item)
+    for file in os.listdir(ass_dir):
         if os.path.isfile(file):
             os.remove(file)
-        else:
-            rmtree(file)
 
 
 def pre_main(arguments):
     pe_file1 = arguments.pefile1
     pe_file2 = arguments.pefile2
-    s_files = arguments.upfiles.split(',')
+    s_files = arguments.upfiles
     pacbio = arguments.pacbio
     sanger = arguments.sanger
     tr_contig = arguments.trcontig
@@ -74,7 +71,10 @@ def pre_main(arguments):
 
 
 def main(pe_file1="", pe_file2="", s_files="", pacbio="", sanger="", tr_contig="", un_contig="", out_dir="",
-         plasmid=True, cv="off"):
+         plasmid=False, cv="off"):
+
+
+    s_files = s_files.split(',')
 
     print('\nOutput dir: {0}'.format(out_dir))
     print('Input file names: {0} {1} {2} {3} {4} {5} {6}'.format(

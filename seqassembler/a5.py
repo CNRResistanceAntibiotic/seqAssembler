@@ -41,7 +41,7 @@ def launch(sample, file1, file2, out_dir):
             if os.path.isdir(f):
                 rmtree(f)
             else:
-                if "contigs.fasta" not in f or ".final.scaffolds.fast" not in f:
+                if "contigs.fasta" not in f and ".final.scaffolds.fast" not in f:
                     os.remove(os.path.join(current_dir, f))
 
         print('Assembly of {0} done!'.format(sample))

@@ -101,11 +101,7 @@ def pre_main(arguments):
     in_f = arguments.in_f
     in_r = arguments.in_r
     subset_size = arguments.subset_size
-    if in_r == '':
-        read_type = 'se'
-        subset_size = 'all'
-    else:
-        read_type = 'pe'
+
     output_dir = arguments.output_dir
     trimmomatic = arguments.trimmomatic
     sickle = arguments.sickle
@@ -121,12 +117,19 @@ def pre_main(arguments):
     sickle_g = arguments.sickleg
     sickle_x = arguments.sicklex
     sickle_n = arguments.sicklen
-    main(in_f, in_r, output_dir, subset_size, read_type, trim_c, trim_l, trim_t, trim_w, trim_q, trim_m, sickle_t,
-         sickle_q, sickle_l, sickle_g, sickle_x, sickle_n, trimmomatic, sickle)
+    main(in_f, in_r, output_dir, subset_size, trim_c, trim_l, trim_t, trim_w, trim_q, trim_m, sickle_t, sickle_q,
+         sickle_l, sickle_g, sickle_x, sickle_n, trimmomatic, sickle)
 
 
-def main(in_f, in_r, output_dir, subset_size, read_type, trim_c, trim_l, trim_t, trim_w, trim_q, trim_m, sickle_t,
-         sickle_q, sickle_l, sickle_g, sickle_x, sickle_n, trimmomatic, sickle):
+def main(in_f, in_r, output_dir, subset_size="all", trim_c="2:30:10", trim_l=3, trim_t=3, trim_w=4, trim_q=15,
+         trim_m=36, sickle_t="sanger", sickle_q=20, sickle_l=40, sickle_g=False, sickle_x=False, sickle_n=False,
+         trimmomatic=False, sickle=False):
+    if in_r == '':
+        read_type = 'se'
+        subset_size = 'all'
+    else:
+        read_type = 'pe'
+
     if output_dir == '':
         output_dir = os.path.abspath(os.path.splitext(in_f)[0])
     if not os.path.exists(output_dir):
