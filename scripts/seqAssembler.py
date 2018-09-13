@@ -241,13 +241,15 @@ def select_assembly(assembler, job_dir, sample, min_size, input_assembler_list):
         # check N50
         if s_n50 < d_n50:
             copy = False
-            print("The assembly with {0} have a lower N50 than teh previous assembly done".format(assembler))
+            print("The assembly with {0} have a lower N50 than the previous assembly done".format(assembler))
         elif s_n50 == d_n50:
             if s_N < d_n:
                 copy = False
         else:
             # N50 is good
             copy = True
+            print("The assembly with {0} have a better N50 than the previous assembly done. It will be copy."
+                  .format(assembler))
             pass
 
     # if the newest assembly produce can be copy
@@ -397,6 +399,7 @@ def main(args):
         # SETUP ASSEMBLER
         print('\nLaunch assembly\n')
         input_assembler_list = args.assembler.split(',')
+        destination_file = ""
         for assembler in input_assembler_list:
             if assembler not in assembler_list:
                 print('\nInvalid assembler name: {0}\n'.format(assembler))
@@ -407,6 +410,7 @@ def main(args):
 
             elif assembler == 'spades' or assembler == 'plasmidspades':
                 trimming_output_file_found = check_trimming(job_dir)
+                trimmer_dir = ""
                 if not trimming_output_file_found or args.force:
                     if trimmer in trimmer_list:
                         trimmer_dir = launch_trimming(job_dir, fq_list, subset_size, trimmer)
@@ -418,19 +422,19 @@ def main(args):
             # Make Assembly file with filtering quality
             destination_file = select_assembly(assembler, job_dir, sample, int(args.minSize), input_assembler_list)
 
-            # Bam file
-            if args.Bam:
-                bam_file = launch_fasta2bam(destination_file, fq_list)
-                if not args.nobamFilter:
-                    launch_bam2stats(destination_file, bam_file, args.mbamDepth, args.mbamSize, args.mbamBasq,
-                                     args.mbamMapq)
+        # Bam file
+        if args.Bam:
+            bam_file = launch_fasta2bam(destination_file, fq_list)
+            if not args.nobamFilter:
+                launch_bam2stats(destination_file, bam_file, args.mbamDepth, args.mbamSize, args.mbamBasq,
+                                 args.mbamMapq)
 
-            # Make differentiation between chrom vs plasmid
-            if args.plasFlow:
-                threshold = 0.7
-                outfile_prep = os.path.join(out_dir, sample + "filtered_plasflow.fasta")
-                outfile_plasflow = os.path.join(out_dir, sample + "plasflow_predictions")
-                launch_plasflow(destination_file, outfile_prep, outfile_plasflow, threshold)
+        # Make differentiation between chrom vs plasmid
+        if args.plasFlow:
+            threshold = 0.7
+            outfile_prep = os.path.join(out_dir, sample + "filtered_plasflow.fasta")
+            outfile_plasflow = os.path.join(out_dir, sample + "plasflow_predictions")
+            launch_plasflow(destination_file, outfile_prep, outfile_plasflow, threshold)
 
 
 def version():

@@ -31,7 +31,8 @@ def launch(sample, file1, file2, out_dir):
         os.chdir(out_dir)
 
         arguments = " --end=5 {0} {1} {2}".format(file1, file2, sample)
-
+        print(os.getcwd())
+        print('a5_pipeline.pl', arguments)
         # launch a5
         subprocess.check_call('a5_pipeline.pl' + arguments, shell=True)
 
