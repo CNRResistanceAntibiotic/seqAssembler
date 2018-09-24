@@ -1,6 +1,7 @@
 import os
 import argparse
 import shutil
+from subprocess import Popen, PIPE, STDOUT
 
 
 def alignment_bwa(fasta_file, fastq_file1, fastq_file2, threads=8, force=False):
@@ -17,14 +18,25 @@ def alignment_bwa(fasta_file, fastq_file1, fastq_file2, threads=8, force=False):
     if not os.path.exists(bam_file) or force:
         # index reference
         cmd = "$(which bwa) index {0}".format(index_fasta_file)
-        os.system(cmd)
+        process = Popen(cmd, shell=True, stdout=PIPE, stderr=STDOUT).stdout.read()
+
+        # make log
+        filename_log = "logBWA_index.txt"
+        header = "Command line executed: {0}\n\n\n{1}".format(cmd, process.decode("utf-8"))
+        log_process_output(header, bwa_index_dir, filename_log)
+
         # remove fasta used for index
         os.remove(index_fasta_file)
 
         # alignment
         cmd = "$(which bwa) mem -t {0} {1} {2} {3} > {4}".format(threads, index_fasta_file, fastq_file1, fastq_file2,
                                                                  sam_file)
-        os.system(cmd)
+        process = Popen(cmd, shell=True, stdout=PIPE, stderr=STDOUT).stdout.read()
+
+        # make log
+        filename_log = "logBWA_MEM.txt"
+        header = "Command line executed: {0}\n\n\n{1}".format(cmd, process.decode("utf-8"))
+        log_process_output(header, os.path.dirname(bam_file), filename_log)
     else:
         print('\nAlignment file {0} already done\n'.format(bam_file))
     return sam_file
@@ -83,6 +95,14 @@ def split_unmapped_mapped_reads(bam_file, force):
         print('\nUnmapped reads fastq file {0} already done\n'.format(unmapped_fastq_file))
 
     return bam_file, unmapped_fastq_file
+
+def log_process_output(output, work_dir_path, filename_log):
+    try:
+        with open("{0}/{1}".format(work_dir_path, filename_log), 'w') as log_file:
+            log_file.write(output)
+
+    except IOError as e:
+        return e
 
 
 def pre_main(args):

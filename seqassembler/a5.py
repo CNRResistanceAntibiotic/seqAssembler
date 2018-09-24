@@ -5,6 +5,8 @@ import subprocess
 import argparse
 from shutil import rmtree
 
+from seqassembler.fasta2bam import log_process_output
+
 
 def backup_assembly(out_dir, sample):
     # BACKUP CONTIG, SCAFFOLD AND STAT FILES
@@ -31,10 +33,16 @@ def launch(sample, file1, file2, out_dir):
         os.chdir(out_dir)
 
         arguments = " --end=5 {0} {1} {2}".format(file1, file2, sample)
-        print(os.getcwd())
-        print('a5_pipeline.pl', arguments)
+        cmd = 'a5_pipeline.pl' + arguments
+        print(cmd)
+
         # launch a5
-        subprocess.check_call('a5_pipeline.pl' + arguments, shell=True)
+        process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.read()
+
+        # make log
+        filename_log = "log_a5_pipeline.txt"
+        header = "Command line executed: {0}\n\n\n{1}".format(cmd, process.decode("utf-8"))
+        log_process_output(header, out_dir, filename_log)
 
         current_dir = os.getcwd()
         # remove useless files
@@ -42,14 +50,15 @@ def launch(sample, file1, file2, out_dir):
             if os.path.isdir(f):
                 rmtree(f)
             else:
-                if "contigs.fasta" not in f and ".final.scaffolds.fast" not in f:
+                if "contigs.fasta" not in f and ".final.scaffolds.fast" not in f and ".assembly_stats.csv" not in f\
+                        and "log_a5_pipeline.txt" not in f:
                     os.remove(os.path.join(current_dir, f))
 
         print('Assembly of {0} done!'.format(sample))
 
         inp_stat_file = os.path.join(out_dir, sample + '.assembly_stats.csv')
         if os.path.exists(inp_stat_file):
-            out_stat_file = os.path.join(os.path.dirname(out_dir), 'a5_assembly_stats.csv')
+            out_stat_file = os.path.join(out_dir, 'a5_assembly_stats.csv')
             header = ""
             if os.path.exists(out_stat_file):
                 IO_type = "a"

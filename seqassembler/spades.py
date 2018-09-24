@@ -48,12 +48,19 @@ def launch(plasmid, cv, pe_file1, pe_file2, s_files, pacbio, sanger, trcontig, u
     cmd = cmd + ' -o {0}'.format(ass_dir)
     print('\nSpades:\n{0}\n'.format(cmd))
     print('Spades in process...')
-    out_str = subprocess.check_output(cmd, shell=True)
-    print(out_str)
+    subprocess.check_output(cmd, shell=True)
 
+    files_to_remove = ["assembly_graph.gfa", "assembly_graph.fastg", "before_rr.fasta"]
     for file in os.listdir(ass_dir):
-        if os.path.isfile(file):
-            os.remove(file)
+
+        file_path = os.path.join(ass_dir, file)
+
+        if os.path.isfile(file_path):
+
+            if file in files_to_remove:
+                os.remove(file_path)
+        if os.path.isdir(file_path):
+            rmtree(file_path)
 
 
 def pre_main(arguments):
@@ -72,7 +79,6 @@ def pre_main(arguments):
 
 def main(pe_file1="", pe_file2="", s_files="", pacbio="", sanger="", tr_contig="", un_contig="", out_dir="",
          plasmid=False, cv="off"):
-
 
     s_files = s_files.split(',')
 

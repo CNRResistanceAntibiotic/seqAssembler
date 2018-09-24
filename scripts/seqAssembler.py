@@ -205,84 +205,90 @@ def launch_spades(assembler, sample, job_dir, fastq_dir, force, trimmer_dir):
         print('\nAssembly {0} already done!\n'.format(assembler))
 
 
-def select_assembly(assembler, job_dir, sample, min_size, input_assembler_list):
+def select_assembly(job_dir, sample, min_size, input_assembler_list):
     source_file = ""
-    if assembler == 'spades':
-        source_file = os.path.join(job_dir, 'spades', 'scaffolds.fasta')
-    elif assembler == 'a5':
-        source_file = os.path.join(job_dir, 'a5', sample + '.final.scaffolds.fasta')
 
     # name of final fasta assembly
     destination_file = os.path.join(job_dir, sample + '.fasta')
 
-    print('\n\n## Assembly with {0} done!  ##'.format(assembler))
-    print('Quality check:')
-    s_quality_dic = assess_quality(source_file)
-    print('Genome size: {0}'.format(s_quality_dic['assembly_len']))
-    print('N number: {0}'.format(s_quality_dic['N_number']))
-    print('Percentage of N(s): {0}'.format(
-        round((100 * s_quality_dic['N_number']) / float(s_quality_dic['assembly_len'])), 5))
-    print('Number of scaffold (length >= 500 pb): {0}'.format(s_quality_dic['contig_number']))
-    print('N50: {0}'.format(s_quality_dic['N50']))
-    # time.sleep(15)
+    for assembler in input_assembler_list:
+        if assembler == 'spades':
+            source_file = os.path.join(job_dir, 'spades', 'scaffolds.fasta')
+        elif assembler == 'a5':
+            source_file = os.path.join(job_dir, 'a5', sample + '.final.scaffolds.fasta')
 
-    copy = True
+        print('\n\n## Assembly with {0} done!  ##'.format(assembler))
+        print('Quality check:')
+        s_quality_dic = assess_quality(source_file)
+        print('Genome size: {0}'.format(s_quality_dic['assembly_len']))
+        print('N number: {0}'.format(s_quality_dic['N_number']))
+        print('Percentage of N(s): {0}'.format(
+            round((100 * s_quality_dic['N_number']) / float(s_quality_dic['assembly_len'])), 5))
+        print('Number of scaffold (length >= 500 pb): {0}'.format(s_quality_dic['contig_number']))
+        print('N50: {0}'.format(s_quality_dic['N50']))
+        # time.sleep(15)
 
-    # check if in case of two or more assembler called wich is the best assembly
-    if os.path.exists(destination_file) and len(input_assembler_list) >= 2:
-        # get N50
-        s_n50 = s_quality_dic['N50']
+        copy = True
 
-        # get count of N bases
-        s_N = s_quality_dic['N_number']
-        d_quality_dic = assess_quality(destination_file)
-        d_n50 = d_quality_dic['N50']
-        d_n = d_quality_dic['N_number']
-        # check N50
-        if s_n50 < d_n50:
-            copy = False
-            print("The assembly with {0} have a lower N50 than the previous assembly done".format(assembler))
-        elif s_n50 == d_n50:
-            if s_N < d_n:
+        # check if in case of two or more assembler called wich is the best assembly
+        if os.path.exists(destination_file) and len(input_assembler_list) >= 2:
+            # get N50
+            s_n50 = s_quality_dic['N50']
+
+            # get count of N bases
+            s_N = s_quality_dic['N_number']
+            d_quality_dic = assess_quality(destination_file)
+            d_n50 = d_quality_dic['N50']
+            d_n = d_quality_dic['N_number']
+            # check N50
+            if s_n50 < d_n50:
                 copy = False
+                print("The assembly with {0} have a lower N50 than the previous assembly done".format(assembler))
+            elif s_n50 == d_n50:
+                if s_N < d_n:
+                    copy = False
+            else:
+                # N50 is good
+                copy = True
+                print("The assembly with {0} have a better N50 than the previous assembly done. It will be copy."
+                      .format(assembler))
+                pass
+
+        # if the newest assembly produce can be copy
+        if copy:
+            print('\nThe assembly going to be written in {0}'.format(destination_file))
+            copy2(source_file, destination_file)
+            print('The assembly is written in {0}'.format(destination_file))
+
+            rec_list = []
+
+            print('\nThe assembly contigs are going to be rename in "ctg_/d+" format')
+            # get id_contig of sorted by length the contigs
+            with open(destination_file, 'r') as f:
+                len_and_ids = sorted(((len(seq), title.split(None, 1)[0]) for
+                                      title, seq in SimpleFastaParser(f)), reverse=True)
+                ids = [id_contig for (length, id_contig) in len_and_ids]
+                del len_and_ids  # free this on memory
+
+            with open(destination_file, 'r') as f:
+                n = 0
+                records = SeqIO.to_dict(SeqIO.parse(f, 'fasta'))
+                for id_contig in ids:
+                    rec = records.get(id_contig)
+                    if len(rec.seq) >= min_size:
+                        n += 1
+                        rec.id = 'ctg_{0}'.format(n)
+                        rec.description = ''
+                        rec_list.append(rec)
+            SeqIO.write(rec_list, open(destination_file, 'w'), 'fasta')
+
+            final_assembler = assembler
+
+            print('The assembly contigs have been renamed !')
         else:
-            # N50 is good
-            copy = True
-            print("The assembly with {0} have a better N50 than the previous assembly done. It will be copy."
-                  .format(assembler))
-            pass
+            print('The assembly with {} was not selected as the best one by the N50 values'.format(assembler))
 
-    # if the newest assembly produce can be copy
-    if copy:
-        print('\nThe assembly going to be written in {0}'.format(destination_file))
-        copy2(source_file, destination_file)
-        print('The assembly is written in {0}'.format(destination_file))
-
-        rec_list = []
-
-        print('\nThe assembly contigs are going to be rename in "ctg_/d+" format')
-        # get id_contig of sorted by length the contigs
-        with open(destination_file, 'r') as f:
-            len_and_ids = sorted(((len(seq), title.split(None, 1)[0]) for
-                                  title, seq in SimpleFastaParser(f)), reverse=True)
-            ids = [id_contig for (length, id_contig) in len_and_ids]
-            del len_and_ids  # free this on memory
-
-        with open(destination_file, 'r') as f:
-            n = 0
-            records = SeqIO.to_dict(SeqIO.parse(f, 'fasta'))
-            for id_contig in ids:
-                rec = records.get(id_contig)
-                if len(rec.seq) >= min_size:
-                    n += 1
-                    rec.id = 'ctg_{0}'.format(n)
-                    rec.description = ''
-                    rec_list.append(rec)
-        SeqIO.write(rec_list, open(destination_file, 'w'), 'fasta')
-
-        print('The assembly contigs have been renamed !')
-    else:
-        print('The assembly with {} was not selected as the best one by the N50 values'.format(assembler))
+    print("\nThe best assembly was done by {0}\n".format(final_assembler))
     print('##  END  ##\n')
 
     return destination_file
@@ -419,8 +425,8 @@ def main(args):
                         exit(1)
                 launch_spades(assembler, sample, job_dir, fq_dir, args.force, trimmer_dir)
 
-            # Make Assembly file with filtering quality
-            destination_file = select_assembly(assembler, job_dir, sample, int(args.minSize), input_assembler_list)
+        # Make Assembly file with filtering quality
+        destination_file = select_assembly(job_dir, sample, int(args.minSize), input_assembler_list)
 
         # Bam file
         if args.Bam:
@@ -432,8 +438,8 @@ def main(args):
         # Make differentiation between chrom vs plasmid
         if args.plasFlow:
             threshold = 0.7
-            outfile_prep = os.path.join(out_dir, sample + "filtered_plasflow.fasta")
-            outfile_plasflow = os.path.join(out_dir, sample + "plasflow_predictions")
+            outfile_prep = os.path.join(out_dir, sample, "filtered_plasflow.fasta")
+            outfile_plasflow = os.path.join(out_dir, sample, "plasflow_predictions")
             launch_plasflow(destination_file, outfile_prep, outfile_plasflow, threshold)
 
 
