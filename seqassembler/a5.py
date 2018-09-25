@@ -32,6 +32,17 @@ def launch(sample, file1, file2, out_dir):
         # set current directory to a5 work directory
         os.chdir(out_dir)
 
+        # Get version of A5
+        cmd = 'a5_pipeline.pl'
+        # launch a5 for version
+        process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.read()
+        log = process.decode("utf-8")
+        version_a5 = ""
+        for n in log.split("\n"):
+            if "A5-miseq" in n:
+                version_a5 = n.split(" ")[2]
+        print("\nVersion A5 :{0}\n".format(version_a5))
+
         arguments = " --end=5 {0} {1} {2}".format(file1, file2, sample)
         cmd = 'a5_pipeline.pl' + arguments
         print(cmd)

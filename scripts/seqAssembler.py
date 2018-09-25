@@ -89,10 +89,13 @@ def launch_trimming(job_dir, fq_list, subset, trimmer_type):
     else:
         sk = True
 
-    print('\nTrimming launcher:\nin_f {0} in_r {1} output_dir {2} subset_size {3} trimmomatic {4} sickle {5}\n'.format(fq_list[0], fq_list[1], trimmer_dir, subset, tr, sk))
-    trimmer.main(in_f=fq_list[0],  in_r=fq_list[1], output_dir=trimmer_dir, subset_size=subset, trimmomatic=tr, sickle=sk)
+    print('\nTrimming launcher:\nin_f {0} in_r {1} output_dir {2} subset_size {3} trimmomatic {4} sickle {5}\n'
+          .format(fq_list[0], fq_list[1], trimmer_dir, subset, tr, sk))
+    trimmer.main(in_f=fq_list[0],  in_r=fq_list[1], output_dir=trimmer_dir, subset_size=subset, trimmomatic=tr,
+                 sickle=sk)
 
     return trimmer_dir
+
 
 def launch_a5(sample, job_dir, fq_list, force):
     job_dir = os.path.abspath(job_dir)
@@ -401,6 +404,8 @@ def main(args):
 
         # fastq or fastq.gz files
         fq_list = fq_files(sample, fq_dir)
+
+        print('\nThe fastq files treated are (in PE) : {0} and {1}'.format(fq_list[0], fq_list[1]))
 
         # SETUP ASSEMBLER
         print('\nLaunch assembly\n')
