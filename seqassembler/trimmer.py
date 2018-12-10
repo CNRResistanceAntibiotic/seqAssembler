@@ -28,7 +28,7 @@ def sickle_call(in_f, in_r, output_dir, read_type, t, q, l, g, x, n):
     # tr_S.fastq.gz
     if read_type == 'se':
         trim_list = [os.path.join(output_dir, 'sk_s1_se.fastq.gz')]
-        cmd = '$(which sickle) se -t {0} -q {1} -l {2}'.format(t, q, l)
+        cmd = 'sickle se -t {0} -q {1} -l {2}'.format(t, q, l)
         option = (' -g', ' -x', ' -n')
         for index, item in enumerate([g, x, n]):
             if item == 'True':
@@ -40,7 +40,7 @@ def sickle_call(in_f, in_r, output_dir, read_type, t, q, l, g, x, n):
     else:
         trim_list = [os.path.join(output_dir, 'sk_s1_pe.fastq.gz'), os.path.join(output_dir, 'sk_s2_pe.fastq.gz'),
                      os.path.join(output_dir, 'sk_s3_up.fastq.gz')]
-        cmd = '$(which sickle) pe -t {0} -q {1} -l {2}'.format(t, q, l)
+        cmd = 'sickle pe -t {0} -q {1} -l {2}'.format(t, q, l)
         option = (' -g', ' -x', ' -n')
         for index, item in enumerate([g, x, n]):
             if item == 'True':
@@ -65,7 +65,7 @@ def trimmomatic_call(in_f, in_r, output_dir, read_type, trim_c, trim_l, trim_t, 
     adapters_dir = os.path.join(trimmomatic_dir, 'adapters')
     if read_type == 'se':
         trim_list = [os.path.join(output_dir, 'tr_s1_se.fastq.gz')]
-        cmd = 'java -jar $(which trimmomatic.jar) SE -threads 4 -phred33 {0} {1} ILLUMINACLIP:{2}:{3} LEADING:{4} ' \
+        cmd = 'java -jar trimmomatic.jar SE -threads 4 -phred33 {0} {1} ILLUMINACLIP:{2}:{3} LEADING:{4} ' \
               'TRAILING:{5} SLIDINGWINDOW:{6}:{7} MINLEN:{8}'\
             .format(in_f, trim_list[0], os.path.join(adapters_dir, 'adapters.fasta'), trim_c, trim_l, trim_t, trim_w,
                     trim_q, trim_m)
@@ -77,7 +77,7 @@ def trimmomatic_call(in_f, in_r, output_dir, read_type, trim_c, trim_l, trim_t, 
         trim_list = [os.path.join(output_dir, 'tr_s1_pe.fastq.gz'), os.path.join(output_dir, 'tr_s1_up.fastq.gz'),
                      os.path.join(output_dir, 'tr_s2_pe.fastq.gz'), os.path.join(output_dir, 'tr_s2_up.fastq.gz'),
                      os.path.join(output_dir, 'tr_s3_up.fastq.gz')]
-        cmd = 'java -jar $(which trimmomatic.jar) PE -threads 4 -phred33 {0} {1} {2} {3} {4} {5}' \
+        cmd = 'java -jar trimmomatic.jar PE -threads 4 -phred33 {0} {1} {2} {3} {4} {5}' \
               ' ILLUMINACLIP:{6}:{7} LEADING:{8} TRAILING:{9} SLIDINGWINDOW:{10}:{11} MINLEN:{12}'\
             .format(in_f, in_r, trim_list[0], trim_list[1], trim_list[2], trim_list[3],
                     os.path.join(adapters_dir, 'adapters.fa'), trim_c, trim_l, trim_t, trim_w, trim_q, trim_m)

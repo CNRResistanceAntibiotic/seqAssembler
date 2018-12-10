@@ -17,7 +17,7 @@ def alignment_bwa(fasta_file, fastq_file1, fastq_file2, threads=8, force=False):
 
     if not os.path.exists(bam_file) or force:
         # index reference
-        cmd = "$(which bwa) index {0}".format(index_fasta_file)
+        cmd = "bwa index {0}".format(index_fasta_file)
         process = Popen(cmd, shell=True, stdout=PIPE, stderr=STDOUT).stdout.read()
 
         # make log
@@ -29,7 +29,7 @@ def alignment_bwa(fasta_file, fastq_file1, fastq_file2, threads=8, force=False):
         os.remove(index_fasta_file)
 
         # alignment
-        cmd = "$(which bwa) mem -t {0} {1} {2} {3} > {4}".format(threads, index_fasta_file, fastq_file1, fastq_file2,
+        cmd = "bwa mem -t {0} {1} {2} {3} > {4}".format(threads, index_fasta_file, fastq_file1, fastq_file2,
                                                                  sam_file)
         process = Popen(cmd, shell=True, stdout=PIPE, stderr=STDOUT).stdout.read()
 
@@ -45,7 +45,7 @@ def alignment_bwa(fasta_file, fastq_file1, fastq_file2, threads=8, force=False):
 def convert_sam_to_bam(sam_file, force=False):
     bam_file = os.path.splitext(sam_file)[0] + '.bam'
     if not os.path.exists(bam_file) or force:
-        cmd = "$(which samtools) view -h -b -S {0} > {1}".format(sam_file, bam_file)
+        cmd = "samtools view -h -b -S {0} > {1}".format(sam_file, bam_file)
         os.system(cmd)
 
         # remove sam file
@@ -56,15 +56,15 @@ def convert_sam_to_bam(sam_file, force=False):
 
 def sort_bam_file(bam_file):
     out_file = os.path.splitext(bam_file)[0] + '_sort.bam'
-    cmd = "$(which samtools) sort -m 1000000000 {0} > {1};mv {2} {3}".format(bam_file, out_file, out_file, bam_file)
+    cmd = "samtools sort -m 1000000000 {0} > {1};mv {2} {3}".format(bam_file, out_file, out_file, bam_file)
     os.system(cmd)
-    cmd = "$(which samtools) flagstat {0} > {1}".format(bam_file, os.path.splitext(bam_file)[0] + '_bamstat.txt')
+    cmd = "samtools flagstat {0} > {1}".format(bam_file, os.path.splitext(bam_file)[0] + '_bamstat.txt')
     os.system(cmd)
     return bam_file
 
 
 def index_bam_file(bam_file):
-    cmd = "$(which samtools) index {0}".format(bam_file)
+    cmd = "samtools index {0}".format(bam_file)
     os.system(cmd)
 
 
@@ -73,11 +73,11 @@ def split_unmapped_mapped_reads(bam_file, force):
     if not os.path.exists(unmapped_fastq_file) or force:
 
         # process BAM of unmapped read
-        cmd = "$(which samtools) view -b -f 4 {0} > tmp_unmapped.bam".format(bam_file)
+        cmd = "samtools view -b -f 4 {0} > tmp_unmapped.bam".format(bam_file)
         os.system(cmd)
 
         # process FASTQ of unmapped read
-        cmd = "$(which samtools) fastq tmp_unmapped.bam > {0}".format(unmapped_fastq_file)
+        cmd = "samtools fastq tmp_unmapped.bam > {0}".format(unmapped_fastq_file)
         os.system(cmd)
 
         # remove unmapped reads BAM file
@@ -85,7 +85,7 @@ def split_unmapped_mapped_reads(bam_file, force):
 
         # process BAM of mapped reads
         out_file = os.path.splitext(bam_file)[0] + '_droped.bam'
-        cmd = "$(which samtools) view -b -F 4 {0} > {1}".format(bam_file, out_file)
+        cmd = "samtools view -b -F 4 {0} > {1}".format(bam_file, out_file)
         os.system(cmd)
 
         # move BAM file

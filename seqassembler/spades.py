@@ -21,14 +21,14 @@ def launch(plasmid, cv, pe_file1, pe_file2, s_files, pacbio, sanger, trcontig, u
             i += 1
             ass_dir = os.path.join(out_dir, 'plasmidspades_{0}'.format(i))
 
-        cmd = '$(which spades.py) --plasmid --careful'
+        cmd = 'spades.py --plasmid --careful'
     else:
         ass_dir = os.path.join(out_dir, 'spades')
         i = 0
         while os.path.exists(ass_dir):
             i += 1
             ass_dir = os.path.join(out_dir, 'spades_{0}'.format(i))
-        cmd = '$(which spades.py) --careful'
+        cmd = 'spades.py --careful'
 
     if pe_file1 != '' and pe_file2 != '':
         cmd = cmd + ' -1 {0} -2 {1}'.format(pe_file1, pe_file2)
