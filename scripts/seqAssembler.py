@@ -11,7 +11,7 @@ from Bio import SeqIO
 
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 
-from seqassembler import a5, fasta2bam, bam2stats, trimmer, spades
+from seqassembler import call_a5, fasta2bam, bam2stats, trimmer, call_spades
 
 install_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -104,7 +104,7 @@ def launch_a5(sample, job_dir, fq_list, force):
     ass_dir = os.path.join(job_dir, 'a5')
     if not os.path.exists(ass_dir) or force:
         print('\nA5 launcher:')
-        a5.main(fq_list[0], fq_list[1], sample, ass_dir)
+        call_a5.main(fq_list[0], fq_list[1], sample, ass_dir)
     else:
         print('\nAssembly a5 already done!\n')
 
@@ -178,8 +178,8 @@ def launch_spades(assembler, sample, job_dir, fastq_dir, force, trimmer_dir):
             print('PE sickle files\n{0} {1}'.format(sk_pe_list[0], sk_pe_list[1]))
             print('SPAdes in process...')
 
-            spades.main(pe_file1=sk_pe_list[0], pe_file2=sk_pe_list[1], out_dir=job_dir, plasmid=plasmid,
-                        s_files=s_files, tr_contig=tr_contig)
+            call_spades.main(pe_file1=sk_pe_list[0], pe_file2=sk_pe_list[1], out_dir=job_dir, plasmid=plasmid,
+                             s_files=s_files, tr_contig=tr_contig)
 
         elif tr_pe_list:
             tr_pe_list.sort()
@@ -189,21 +189,21 @@ def launch_spades(assembler, sample, job_dir, fastq_dir, force, trimmer_dir):
             print('PE Trimmomatic files\n{0} {1}'.format(tr_pe_list[0], tr_pe_list[1]))
             print('SPAdes in process...')
 
-            spades.main(pe_file1=tr_pe_list[0], pe_file2=tr_pe_list[1], out_dir=job_dir, plasmid=plasmid,
-                        s_files=s_files, tr_contig=tr_contig)
+            call_spades.main(pe_file1=tr_pe_list[0], pe_file2=tr_pe_list[1], out_dir=job_dir, plasmid=plasmid,
+                             s_files=s_files, tr_contig=tr_contig)
 
         elif sk_se_list:
             s_files = sk_se_list[0]
             print('SE sickle files\n{0}'.format(sk_se_list[0]))
             print('SPAdes in process...')
-            spades.main(out_dir=job_dir, plasmid=plasmid,
-                        s_files=s_files, tr_contig=tr_contig)
+            call_spades.main(out_dir=job_dir, plasmid=plasmid,
+                             s_files=s_files, tr_contig=tr_contig)
 
         elif tr_se_list:
             print('SE Trimmomatic files\n{0}'.format(tr_se_list))
             print('SPAdes in process...')
-            spades.main(out_dir=job_dir, plasmid=plasmid,
-                        s_files=tr_se_list, tr_contig=tr_contig)
+            call_spades.main(out_dir=job_dir, plasmid=plasmid,
+                             s_files=tr_se_list, tr_contig=tr_contig)
     else:
         print('\nAssembly {0} already done!\n'.format(assembler))
 
