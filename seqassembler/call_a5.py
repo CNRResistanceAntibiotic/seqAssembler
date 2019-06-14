@@ -57,6 +57,7 @@ def launch(sample, file1, file2, out_dir):
 
         current_dir = os.getcwd()
         # remove useless files
+        pivot = 0
         for f in os.listdir(current_dir):
             if os.path.isdir(f):
                 rmtree(f)
@@ -65,30 +66,37 @@ def launch(sample, file1, file2, out_dir):
                         and "log_a5_pipeline.txt" not in f:
                     os.remove(os.path.join(current_dir, f))
 
-        print('Assembly of {0} done!'.format(sample))
+                if ".final.scaffolds.fast" in f:
+                    pivot = 1
 
-        inp_stat_file = os.path.join(out_dir, sample + '.assembly_stats.csv')
-        if os.path.exists(inp_stat_file):
-            out_stat_file = os.path.join(out_dir, 'a5_assembly_stats.csv')
-            header = ""
-            if os.path.exists(out_stat_file):
-                IO_type = "a"
-            else:
-                IO_type = "w"
-                header = 'ID\tNombre de contigs\tNombre de scaffolds\tTaille du genome\tScaffold le plus long\tN50\t' \
-                         'Nombre de reads\tNombre de reads conserves\t% de reads conservees\tNombre de nucleotides\t' \
-                         'Nombre de nucleotides conserves\t% de nucleotides conserves\t' \
-                         'Profondeur moyenne\tProfondeur moyenne filtree\tProfondeur mediane\t' \
-                         'Profondeur au 10eme percentile\t' \
-                         'Nombre de bases >= Q40\tGC %\n'
+        if pivot == 1:
+            print('Assembly of {0} done!'.format(sample))
 
-            with open(out_stat_file, '{0}'.format(IO_type)) as f:
-                if header:
-                    f.write(header)
+            inp_stat_file = os.path.join(out_dir, sample + '.assembly_stats.csv')
+            if os.path.exists(inp_stat_file):
+                out_stat_file = os.path.join(out_dir, 'a5_assembly_stats.csv')
+                header = ""
+                if os.path.exists(out_stat_file):
+                    IO_type = "a"
+                else:
+                    IO_type = "w"
+                    header = 'ID\tNombre de contigs\tNombre de scaffolds\tTaille du genome\tScaffold le plus long\tN50\t' \
+                             'Nombre de reads\tNombre de reads conserves\t% de reads conservees\tNombre de nucleotides\t' \
+                             'Nombre de nucleotides conserves\t% de nucleotides conserves\t' \
+                             'Profondeur moyenne\tProfondeur moyenne filtree\tProfondeur mediane\t' \
+                             'Profondeur au 10eme percentile\t' \
+                             'Nombre de bases >= Q40\tGC %\n'
 
-                for n, line in enumerate(open(inp_stat_file, 'r')):
-                    if n > 0:
-                        f.write('\t'.join(line.split('\t')[:-1]) + '\n')
+                with open(out_stat_file, '{0}'.format(IO_type)) as f:
+                    if header:
+                        f.write(header)
+
+                    for n, line in enumerate(open(inp_stat_file, 'r')):
+                        if n > 0:
+                            f.write('\t'.join(line.split('\t')[:-1]) + '\n')
+
+        else:
+            print('Assembly of {0} not done! Check error file log : {1}'.format(sample, filename_log))
 
 
 def pre_main(arguments):

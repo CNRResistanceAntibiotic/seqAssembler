@@ -217,8 +217,21 @@ def select_assembly(job_dir, sample, min_size, input_assembler_list):
     for assembler in input_assembler_list:
         if assembler == 'spades':
             source_file = os.path.join(job_dir, 'spades', 'scaffolds.fasta')
+
+            if os.path.exists(source_file):
+                print("The assembly file of {0} exist.")
+            else:
+                print("The assembly file of {0} not exist. This assembler is not keep for further steps.")
+                pass
+
         elif assembler == 'a5':
             source_file = os.path.join(job_dir, 'a5', sample + '.final.scaffolds.fasta')
+
+            if os.path.exists(source_file):
+                print("The assembly file of {0} exist.")
+            else:
+                print("The assembly file of {0} not exist. This assembler is not keep for further steps.")
+                pass
 
         print('\n\n## Assembly with {0} done!  ##'.format(assembler))
         print('Quality check:')
