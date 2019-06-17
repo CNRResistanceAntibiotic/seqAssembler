@@ -7,11 +7,14 @@
 from setuptools import setup, find_packages
 import glob
 
-import seqassembler_lib
+
+def version():
+    return "1.0.2"
+
 
 setup(
     name='seqassembler',
-    version=seqassembler_lib.version,
+    version=version(),
     description='seqassembler: pipeline CNR Resistance for assembl genomes',
     packages=find_packages(),
     author='Richard Bonnet',
