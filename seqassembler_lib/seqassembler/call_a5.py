@@ -5,7 +5,7 @@ import subprocess
 import argparse
 from shutil import rmtree
 
-from seqassembler.fasta2bam import log_process_output
+from seqassembler_lib.seqassembler import log_process_output
 
 
 def backup_assembly(out_dir, sample):

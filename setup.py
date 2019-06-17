@@ -9,11 +9,12 @@ import glob
 
 setup(
     name='seqassembler',
-    version='1.0.1',
+    version='1.0.2',
     description='seqassembler: pipeline CNR Resistance for assembl genomes',
     packages=find_packages(),
     author='Richard Bonnet',
     author_email='rbonnet@chu-clermontferrand.fr',
+    python_requires='>=3.5',
     url='https://github.com/CNRResistanceAntibiotic/seqAssembler',
     scripts=glob.glob('scripts/*'),
     install_requires=[''],

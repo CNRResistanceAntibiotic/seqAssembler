@@ -11,9 +11,7 @@ from Bio import SeqIO
 
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 
-from seqassembler import call_a5, fasta2bam, bam2stats, trimmer, call_spades
-
-install_dir = os.path.dirname(os.path.realpath(__file__))
+from seqassembler_lib.seqassembler import trimmer, call_a5, call_spades, bam2stats, fasta2bam
 
 
 def setup_samples(sample_file):
@@ -166,6 +164,7 @@ def launch_spades(assembler, sample, job_dir, fastq_dir, force, trimmer_dir):
 
     if not os.path.exists(os.path.join(job_dir, assembler)) or force:
 
+        s_files = ""
         tr_contig = ""
         if long_reads != '':
             tr_contig = long_reads
@@ -213,6 +212,8 @@ def select_assembly(job_dir, sample, min_size, input_assembler_list):
 
     # name of final fasta assembly
     destination_file = os.path.join(job_dir, sample + '.fasta')
+
+    final_assembler = ""
 
     for assembler in input_assembler_list:
         if assembler == 'spades':
