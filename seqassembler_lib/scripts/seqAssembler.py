@@ -1,14 +1,13 @@
 #!/usr/bin/python3
 # Write by Richard Bonnet
 # Date: 19/01/2016
+import argparse
 import os
 import subprocess
-import argparse
 import sys
 from shutil import copy2
 
 from Bio import SeqIO
-
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 
 from seqassembler_lib.seqassembler import trimmer, call_a5, call_spades, bam2stats, fasta2bam
@@ -89,7 +88,7 @@ def launch_trimming(job_dir, fq_list, subset, trimmer_type):
 
     print('\nTrimming launcher:\nin_f {0} in_r {1} output_dir {2} subset_size {3} trimmomatic {4} sickle {5}\n'
           .format(fq_list[0], fq_list[1], trimmer_dir, subset, tr, sk))
-    trimmer.main(in_f=fq_list[0],  in_r=fq_list[1], output_dir=trimmer_dir, subset_size=subset, trimmomatic=tr,
+    trimmer.main(in_f=fq_list[0], in_r=fq_list[1], output_dir=trimmer_dir, subset_size=subset, trimmomatic=tr,
                  sickle=sk)
 
     return trimmer_dir
