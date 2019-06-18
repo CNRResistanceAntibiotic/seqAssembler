@@ -304,10 +304,11 @@ def select_assembly(job_dir, sample, min_size, input_assembler_list):
         else:
             print('The assembly with {0} was not selected as the best one by the N50 values'.format(assembler))
 
-    print("\nThe best assembly was done by {0}\n".format(final_assembler))
-
     if not final_assembler:
+        print("\nNo assembly has been selected !!! The program exit.\n".format(final_assembler))
         exit()
+    else:
+        print("\nThe best assembly was done by {0}\n".format(final_assembler))
 
     print('##  END  ##\n')
 
