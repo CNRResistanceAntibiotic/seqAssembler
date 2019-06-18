@@ -302,9 +302,13 @@ def select_assembly(job_dir, sample, min_size, input_assembler_list):
 
             print('The assembly contigs have been renamed !')
         else:
-            print('The assembly with {} was not selected as the best one by the N50 values'.format(assembler))
+            print('The assembly with {0} was not selected as the best one by the N50 values'.format(assembler))
 
     print("\nThe best assembly was done by {0}\n".format(final_assembler))
+
+    if not final_assembler:
+        exit()
+
     print('##  END  ##\n')
 
     return destination_file
