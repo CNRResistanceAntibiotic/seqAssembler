@@ -15,7 +15,7 @@ def version():
 setup(
     name='seqassembler',
     version=version(),
-    description='seqassembler: pipeline CNR Resistance for assembl genomes',
+    description='seqassembler: pipeline CNR Resistance for assembling genomes',
     packages=find_packages(),
     author='Richard Bonnet',
     author_email='rbonnet@chu-clermontferrand.fr',

@@ -10,7 +10,7 @@ from shutil import copy2
 from Bio import SeqIO
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 
-from seqassembler_lib.seqassembler import trimmer, call_a5, call_spades, bam2stats, fasta2bam
+from seqassembler_lib.seqassembler import trimmer, call_a5, call_spades, bam2stats, fasta2bam, call_skesa
 
 
 def setup_samples(sample_file):
@@ -95,7 +95,6 @@ def launch_trimming(job_dir, fq_list, subset, trimmer_type):
 
 
 def launch_a5(sample, job_dir, fq_list, force):
-    job_dir = os.path.abspath(job_dir)
 
     # LAUNCH A5
     ass_dir = os.path.join(job_dir, 'a5')
@@ -106,8 +105,19 @@ def launch_a5(sample, job_dir, fq_list, force):
         print('\nAssembly a5 already done!\n')
 
 
+def launch_skesa(sample, job_dir, fq_list, force):
+
+    # LAUNCH SKESA
+    ass_dir = os.path.join(job_dir, 'SKESA')
+    if not os.path.exists(ass_dir) or force:
+        print('\nSKESA launcher:')
+        call_skesa.main(fq_list[0], fq_list[1], sample, ass_dir)
+    else:
+        print('\nAssembly SKESA already done!\n')
+
+
 def launch_spades(assembler, sample, job_dir, fastq_dir, force, trimmer_dir):
-    job_dir = os.path.abspath(job_dir)
+
     fastq_dir = os.path.abspath(fastq_dir)
     # SEARCH FASTQ AND FASTQ.GZ IN TRIM_DIR
     file_list = []
@@ -233,6 +243,16 @@ def select_assembly(job_dir, sample, min_size, input_assembler_list):
                 print("The assembly file of {0} not exist. This assembler is not keep for further steps.".format(assembler))
                 continue
 
+        elif assembler == 'SKESA':
+            source_file = os.path.join(job_dir, 'SKESA', sample + '.skesa.fa')
+
+            if os.path.exists(source_file):
+                print("The assembly file of {0} exist.".format(assembler))
+            else:
+                print("The assembly file of {0} not exist. This assembler is not keep for further steps.".format(
+                    assembler))
+                continue
+
         print('\n\n## Assembly with {0} done!  ##'.format(assembler))
         print('Quality check:')
         s_quality_dic = assess_quality(source_file)
@@ -302,7 +322,7 @@ def select_assembly(job_dir, sample, min_size, input_assembler_list):
 
             print('The assembly contigs have been renamed !')
         else:
-            print('The assembly with {0} was not selected as the best one by the N50 values'.format(assembler))
+            print(f'The assembly with {assembler} was not selected as the best one by the N50 values')
 
     if not final_assembler:
         print("\nNo assembly has been selected !!! The program exit.\n".format(final_assembler))
@@ -381,7 +401,8 @@ def launch_plasflow(destination_file, outfile_prep, outfile_plasflow, threshold)
 
 def main(args):
     trimmer_list = ['sickle', 'trimmomatic']
-    assembler_list = ['a5', 'spades', 'plasmidspades']
+    assembler_list = ['a5', 'spades', 'plasmidspades', 'SKESA']
+
 
     # SETUP FASTQ/FASTGZ DIRECTORY
     fq_dir = args.fqDir
@@ -448,6 +469,9 @@ def main(args):
                         exit(1)
                 launch_spades(assembler, sample, job_dir, fq_dir, args.force, trimmer_dir)
 
+            elif assembler == 'SKESA':
+                launch_skesa(sample, job_dir, fq_list, args.force)
+
         # Make Assembly file with filtering quality
         destination_file = select_assembly(job_dir, sample, int(args.minSize), input_assembler_list)
 
@@ -488,7 +512,7 @@ def run():
     parser.add_argument('-tr', '--trimmer', dest="trimmer", default='sickle',
                         help="sickle or trimmomatic or nothing (default: sickle)")
     parser.add_argument('-a', '--assembler', dest="assembler", default="a5",
-                        help="Assembler names [a5,spades,plasmidspades] as a comma separated list (default: a5)")
+                        help="Assembler names [a5,spades,plasmidspades, SKESA] as a comma separated list (default: a5)")
     parser.add_argument('-sb', '--subset', dest="subset", default='all',
                         help="The number of loaded reads by fastq file in trimmomatic-based trimming (default: all)")
     parser.add_argument('-ms', '--minSize', dest="minSize", default=500,

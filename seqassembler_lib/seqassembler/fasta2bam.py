@@ -11,6 +11,8 @@ def alignment_bwa(fasta_file, fastq_file1, fastq_file2, threads=8, force=False):
 
     if not os.path.exists(bwa_index_dir):
         os.mkdir(bwa_index_dir)
+    else:
+        print("\nIndex BWA already exist!\n")
 
     index_fasta_file = os.path.join(bwa_index_dir, os.path.basename(fasta_file))
     shutil.copy(fasta_file, index_fasta_file)
@@ -96,6 +98,7 @@ def split_unmapped_mapped_reads(bam_file, force):
 
     return bam_file, unmapped_fastq_file
 
+
 def log_process_output(output, work_dir_path, filename_log):
     try:
         with open("{0}/{1}".format(work_dir_path, filename_log), 'w') as log_file:
@@ -115,6 +118,14 @@ def pre_main(args):
 
 
 def main(fasta_file, fastq_file1, fastq_file2, force=False, threads=8):
+
+    print("FASTA TO BAM arguments:\n")
+    print("\t - Fasta File = {0}".format(fasta_file))
+    print("\t - Fastq File 1 = {0}".format(fastq_file1))
+    print("\t - Fastq File 2 = {0}".format(fastq_file2))
+    print("\t - Force = {0}".format(force))
+    print("\t - Threads = {0}".format(threads))
+
     print("*START Align BWA*")
     sam_file = alignment_bwa(fasta_file, fastq_file1, fastq_file2, threads, force)
     print("*END Align BWA*")
