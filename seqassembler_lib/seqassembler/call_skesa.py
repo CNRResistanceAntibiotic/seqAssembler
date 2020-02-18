@@ -28,8 +28,9 @@ def launch(sample, file1, file2, out_dir):
         log = process.decode("utf-8")
         version_skesa = ""
         for n in log.split("\n"):
+            print(n)
             if "SKESA" in n:
-                version_skesa = n.split(" ")[2]
+                version_skesa = n.split(" ")[1]
         print(f"\nVersion SKESA :{version_skesa}\n")
 
         output_assembly = os.path.join(out_dir, "{0}.skesa.fa".format(sample))
