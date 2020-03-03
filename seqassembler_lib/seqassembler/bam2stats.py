@@ -24,8 +24,8 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
     bam = pysam.AlignmentFile(bam_file)
 
     # Extract data for each contigs
-    outfile = os.path.join(out_dir, 'assembly_stats.tsv')
-    if not os.path.exists(outfile) or force:
+    out_file = os.path.join(out_dir, 'assembly_stats.tsv')
+    if not os.path.exists(out_file) or force:
         df = pd.DataFrame()
         for ctg in contigs:
             print('Bam data for {0} ({1}-bp) in process...'.format(ctg.id, len(ctg)))
@@ -114,9 +114,9 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
 
             if ext_report:
                 # Mapping quality report as tsv file
-                mqDic = OrderedDict([('RMS_mapq', data.rms_mapq), ('MAX_mapq', data.max_mapq),
+                mq_dic = OrderedDict([('RMS_mapq', data.rms_mapq), ('MAX_mapq', data.max_mapq),
                                      ('Nbr_mapqO', data.reads_mapq0)])
-                df = pd.DataFrame(mqDic, index=positions)
+                df = pd.DataFrame(mq_dic, index=positions)
                 df.index.name = 'Positions'
                 out_prefix = os.path.join(out_dir, '{0}_assembly_mapq'.format(ctg.id))
                 df.to_csv(out_prefix + '.tsv', sep='\t', index=True)
@@ -124,8 +124,8 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
                 if plt_report:
                     # Mapping quality report as png plot
                     plt.figure(figsize=(20, 20))
-                    for n, key in enumerate(mqDic):
-                        values = mqDic[key]
+                    for n, key in enumerate(mq_dic):
+                        values = mq_dic[key]
                         plt.subplot(3, 1, n + 1)
                         plt.plot(positions, values, linewidth=0.5, linestyle='-', label=key)
                         plt.legend(fontsize=12, loc=1)
@@ -140,7 +140,7 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
                     plt.savefig(out_prefix + '.png')
                     plt.close()
 
-        print('\nWrite the main results in {0}:'.format(outfile))
+        print('\nWrite the main results in {0}:'.format(out_file))
         # df.boxplot(by='ctg', column=['Depth', 'Match_depth', 'Basq', 'Match_basq', 'Mapq'])
         # plt.savefig(os.path.splitext(outfile)[0]+'.png')
         results = []
@@ -175,11 +175,11 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
             res_dic['Nbr_ambiguous'] = ambiguous
             results.append(res_dic)
         df = pd.DataFrame(results)
-        df.to_csv(outfile, sep='\t', index=False)
+        df.to_csv(out_file, sep='\t', index=False)
     else:
         print('\nThe main ouput file already done!\n')
 
-    return outfile, contigs
+    return out_file, contigs
 
 
 def filter_contigs(result_file, contigs, m_size, m_basq, m_mapq, m_depth, rename):

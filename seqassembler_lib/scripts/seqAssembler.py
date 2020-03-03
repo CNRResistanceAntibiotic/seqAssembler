@@ -369,7 +369,7 @@ def launch_bam2stats(fasta_file, bam_file, mbam_depth, mbam_size, mbam_basq, mba
     print('\n#Run bam-based filter')
 
     bam2stats.main(fas_file=fasta_file, bam_file=bam_file, m_depth=mbam_depth, m_size=mbam_size,
-                   m_basq=mbam_basq, m_mapq=mbam_mapq, filter_bam=True)
+                   m_basq=mbam_basq, m_mapq=mbam_mapq, filter_bam=True, plt_report=True)
 
     # copy fasta file
     copy2(os.path.join(os.path.dirname(fasta_file), 'bam_stats', 'assembly_filtered.fas'), fasta_file)
