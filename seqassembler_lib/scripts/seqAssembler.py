@@ -5,7 +5,7 @@ import argparse
 import os
 import subprocess
 import sys
-from shutil import copy2
+from shutil import copy2, move
 
 from Bio import SeqIO
 from Bio.SeqIO.FastaIO import SimpleFastaParser
@@ -254,6 +254,17 @@ def select_assembly(job_dir, sample, min_size, input_assembler_list):
                 continue
 
         print('\n\n## Assembly with {0} done!  ##'.format(assembler))
+        print("Order Fasta assembled by Sequence length")
+        with open(source_file, "r") as handle:
+            records = list(SeqIO.parse(handle, "fasta"))
+        records.sort(key=lambda r: -len(r))
+        source_file_corr = "{0}-corrected".format(source_file)
+        with open(source_file_corr, "w") as out_handle:
+            SeqIO.write(records, out_handle, "fasta")
+
+        os.remove(source_file)
+        move(source_file_corr, source_file)
+
         print('Quality check:')
         s_quality_dic = assess_quality(source_file)
         print('Genome size: {0}'.format(s_quality_dic['assembly_len']))
