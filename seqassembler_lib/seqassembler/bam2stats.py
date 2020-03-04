@@ -235,6 +235,7 @@ def filter_contigs(result_file, contigs, m_size, m_basq, m_mapq, m_depth, rename
     # Assembly stats after filtering:
     ds = pd.DataFrame(results)
     nw = {}
+
     for item in header:
         if item == 'ID':
             nw[item] = 'overall'
@@ -242,13 +243,14 @@ def filter_contigs(result_file, contigs, m_size, m_basq, m_mapq, m_depth, rename
             nw[item] = ds[item].astype(float).max()
         elif 'min' in item:
             nw[item] = ds[item].astype(float).min()
-        elif item == 'Size' or 'Nbr_ambiguous':
+        elif item == 'Size' or item == 'Nbr_ambiguous':
             nw[item] = ds[item].astype(float).sum()
         else:
             d_item = ds[item].astype(float) * ds['Size'].astype(int)
-            nw[item] = round(d_item.sum() / ds['Size'].astype(int).sum() / len(records), 2)
+            nw[item] = round(ds[item].astype(float).sum() / len(records), 2)
 
     results.append(nw)
+
     df = pd.DataFrame(results)
     df = df[header]
     out_file = os.path.splitext(result_file)[0] + '_filtered.tsv'
