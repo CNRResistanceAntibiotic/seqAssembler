@@ -35,6 +35,7 @@ def setup_samples(sample_file):
 def fq_files(sample, fq_dir):
     # SEARCH FASTQ OR FASTQ.GZ
     file_list = []
+
     for ext in ['.fastq', '.fastq.gz']:
         for dir_path, dir_names, file_names in os.walk(fq_dir):
             file_list = file_list + [os.path.join(dir_path, filename) for filename in file_names
@@ -172,9 +173,7 @@ def launch_spades(assembler, sample, job_dir, fastq_dir, force, trimmer_dir):
         print('Genomic assembly with', end=' ')
 
     if not os.path.exists(os.path.join(job_dir, assembler)) or force:
-
-        s_files = ""
-        tr_contig = ""
+        s_files = tr_contig = ""
         if long_reads != '':
             tr_contig = long_reads
 
@@ -255,6 +254,7 @@ def select_assembly(job_dir, sample, min_size, input_assembler_list):
 
         print('\n\n## Assembly with {0} done!  ##'.format(assembler))
         print("Order Fasta assembled by Sequence length")
+
         with open(source_file, "r") as handle:
             records = list(SeqIO.parse(handle, "fasta"))
         records.sort(key=lambda r: -len(r))
@@ -264,7 +264,8 @@ def select_assembly(job_dir, sample, min_size, input_assembler_list):
 
         os.remove(source_file)
         move(source_file_corr, source_file)
-
+        print("End order fasta by length")
+        print("Open {0} fasta file for check".format(source_file))
         print('Quality check:')
         s_quality_dic = assess_quality(source_file)
         print('Genome size: {0}'.format(s_quality_dic['assembly_len']))
@@ -346,17 +347,15 @@ def select_assembly(job_dir, sample, min_size, input_assembler_list):
 
 
 def assess_quality(filename):
+    records = []
+    assembly_len = total = n_number = 0
     with open(filename, 'r') as f:
-        records = []
-        assembly_len = 0
-        n_number = 0
         for rec in SeqIO.parse(f, 'fasta'):
             n_number = n_number + str(rec.seq).count('N') + str(rec.seq).count('n')
             assembly_len += len(str(rec.seq))
             records.append(str(rec.seq))
     contig_number = len([x for x in records if len(x) >= 500])
     records.sort(key=len)
-    total = 0
     n50 = ""
     for seq in records:
         total += len(seq)
@@ -368,51 +367,39 @@ def assess_quality(filename):
 
 def launch_fasta2bam(fasta_file, fq_list):
     print('\n#Run the alignment of reads with assembly')
-
     fasta2bam.main(fasta_file, fq_list[0], fq_list[1], 8, True)
-
     print('\n#End bam file generated, sorted and indexed')
-
     return os.path.splitext(fasta_file)[0] + '.bam'
 
 
 def launch_bam2stats(fasta_file, bam_file, mbam_depth, mbam_size, mbam_basq, mbam_mapq):
     print('\n#Run bam-based filter')
-
-    bam2stats.main(fas_file=fasta_file, bam_file=bam_file, m_depth=mbam_depth, m_size=mbam_size,
-                   m_basq=mbam_basq, m_mapq=mbam_mapq, filter_bam=True, plt_report=True)
-
+    bam2stats.main(fas_file=fasta_file, bam_file=bam_file, m_depth=mbam_depth, m_size=mbam_size, m_basq=mbam_basq,
+                   m_mapq=mbam_mapq, filter_bam=True, plt_report=True)
     # copy fasta file
     copy2(os.path.join(os.path.dirname(fasta_file), 'bam_stats', 'assembly_filtered.fas'), fasta_file)
-
     print('\n#End bam file generated, sorted and indexed')
 
 
 def launch_plasflow(destination_file, outfile_prep, outfile_plasflow, threshold):
     print('\n\n#Preparation of PlasFlow sequence')
-
     cmd = 'perl /usr/local/PlasFlow/filter_sequences_by_length.pl -input {0} -output {1} -thresh {2}'.format(
         destination_file, outfile_prep, threshold)
     out_str = subprocess.check_output(cmd, shell=True)
     print(out_str)
-
     print('\n#End of the preparation of PlasFlow sequence')
-
+    #########################
     print('\n#Run of PlasFlow')
-
     cmd = 'python3 /usr/local/PlasFlow/PlasFlow.py --input {0} --output {1}'.format(outfile_prep, outfile_plasflow)
     out_str = subprocess.check_output(cmd, shell=True)
     print(out_str)
-
     print('\n#End of PlasFlow')
-
     return outfile_plasflow
 
 
 def main(args):
     trimmer_list = ['sickle', 'trimmomatic']
     assembler_list = ['a5', 'spades', 'plasmidspades', 'SKESA']
-
 
     # SETUP FASTQ/FASTGZ DIRECTORY
     fq_dir = args.fqDir
@@ -445,7 +432,6 @@ def main(args):
     # START THE JOBS
     for sample in sample_list:
         job_dir = os.path.abspath(os.path.join(out_dir, sample))
-
         if not os.path.exists(job_dir):
             os.makedirs(os.path.abspath(job_dir))
 
@@ -464,10 +450,8 @@ def main(args):
             if assembler not in assembler_list:
                 print('\nInvalid assembler name: {0}\n'.format(assembler))
                 exit(1)
-
             elif assembler == 'a5':
                 launch_a5(sample, job_dir, fq_list, args.force)
-
             elif assembler == 'spades' or assembler == 'plasmidspades':
                 trimming_output_file_found = check_trimming(job_dir)
                 trimmer_dir = ""
@@ -478,10 +462,8 @@ def main(args):
                         print('\nTrimmer {0} not found\n'.format(trimmer))
                         exit(1)
                 launch_spades(assembler, sample, job_dir, fq_dir, args.force, trimmer_dir)
-
             elif assembler == 'SKESA':
                 launch_skesa(sample, job_dir, fq_list, args.force)
-
         # Make Assembly file with filtering quality
         destination_file = select_assembly(job_dir, sample, int(args.minSize), input_assembler_list)
 

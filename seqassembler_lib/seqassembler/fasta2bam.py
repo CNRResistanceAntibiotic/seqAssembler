@@ -13,6 +13,7 @@ def alignment_bwa(fasta_file, fastq_file1, fastq_file2, threads=8, force=False):
         os.mkdir(bwa_index_dir)
     else:
         print("\nIndex BWA already exist!\n")
+        print("At {0}".format(bwa_index_dir))
 
     index_fasta_file = os.path.join(bwa_index_dir, os.path.basename(fasta_file))
     shutil.copy(fasta_file, index_fasta_file)
