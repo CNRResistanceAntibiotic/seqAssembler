@@ -34,8 +34,8 @@ def launch(sample, file1, file2, out_dir):
         print(f"\nVersion SKESA :{version_skesa}\n")
 
         output_assembly = os.path.join(out_dir, "{0}.skesa.fa".format(sample))
-
-        cmd = 'skesa --reads {0},{1} --cores 4 --memory 20 > {2}'.format(file1, file2, output_assembly)
+        cmd = 'shovill --assembler skesa --R1 {1} --R2 {2} --outdir {2}'.format(file1, file2, output_assembly)
+        # cmd = 'skesa --reads {0},{1} --cores 4 --memory 20 > {2}'.format(file1, file2, output_assembly)
         print(cmd)
 
         # launch SKESA
@@ -58,30 +58,6 @@ def launch(sample, file1, file2, out_dir):
 
         if pivot == 1:
             print(f'Assembly of {sample} done!')
-
-            inp_stat_file = os.path.join(out_dir, sample + '.assembly_stats.csv')
-            if os.path.exists(inp_stat_file):
-                out_stat_file = os.path.join(out_dir, 'a5_assembly_stats.csv')
-                header = ""
-                if os.path.exists(out_stat_file):
-                    IO_type = "a"
-                else:
-                    IO_type = "w"
-                    header = 'ID\tNombre de contigs\tNombre de scaffolds\tTaille du genome\tScaffold le plus long\tN50\t' \
-                             'Nombre de reads\tNombre de reads conserves\t% de reads conservees\tNombre de nucleotides\t' \
-                             'Nombre de nucleotides conserves\t% de nucleotides conserves\t' \
-                             'Profondeur moyenne\tProfondeur moyenne filtree\tProfondeur mediane\t' \
-                             'Profondeur au 10eme percentile\t' \
-                             'Nombre de bases >= Q40\tGC %\n'
-
-                with open(out_stat_file, '{0}'.format(IO_type)) as f:
-                    if header:
-                        f.write(header)
-
-                    for n, line in enumerate(open(inp_stat_file, 'r')):
-                        if n > 0:
-                            f.write('\t'.join(line.split('\t')[:-1]) + '\n')
-
         else:
             print(f'Assembly of {sample} not done! Check error file log : {filename_log}')
 

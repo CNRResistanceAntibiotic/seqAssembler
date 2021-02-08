@@ -6,7 +6,6 @@ from shutil import rmtree
 
 
 def launch(plasmid, cv, pe_file1, pe_file2, s_files, pacbio, sanger, trcontig, uncontig, out_dir):
-
     # Get version Spades
     cmd = 'spades.py -v'
     # launch spades for version
@@ -54,17 +53,17 @@ def launch(plasmid, cv, pe_file1, pe_file2, s_files, pacbio, sanger, trcontig, u
         cmd = cmd + ' --cov-cutoff {0}'.format(cv)
 
     cmd = cmd + ' -o {0}'.format(ass_dir)
+
+    cmd = 'shovill --assembler spades --R1 {1} --R2 {2} --outdir {2}'.format(pe_file1, pe_file2, ass_dir)
+
     print('\nSpades:\n{0}\n'.format(cmd))
     print('Spades in process...')
     subprocess.check_output(cmd, shell=True)
 
     files_to_remove = ["assembly_graph.gfa", "assembly_graph.fastg", "before_rr.fasta"]
     for file in os.listdir(ass_dir):
-
         file_path = os.path.join(ass_dir, file)
-
         if os.path.isfile(file_path):
-
             if file in files_to_remove:
                 os.remove(file_path)
         if os.path.isdir(file_path):

@@ -323,15 +323,16 @@ def select_assembly(job_dir, sample, min_size, input_assembler_list):
                 records = SeqIO.to_dict(SeqIO.parse(f, 'fasta'))
                 for id_contig in ids:
                     rec = records.get(id_contig)
+                    rec.id = 'ctg_{0}'.format(n)
+                    rec.description = ''
                     if len(rec.seq) >= min_size:
                         n += 1
-                        rec.id = 'ctg_{0}'.format(n)
-                        rec.description = ''
                         rec_list.append(rec)
+                    else:
+                        print("Contig \"{0}\" has been removed on the final assembly (contig length less than "
+                              "{1})".format(rec.id, min_size))
             SeqIO.write(rec_list, open(destination_file, 'w'), 'fasta')
-
             final_assembler = assembler
-
             print('The assembly contigs have been renamed !')
         else:
             print("The assembly with {0} was not selected as the best one by the N50 values".format(assembler))
@@ -340,9 +341,7 @@ def select_assembly(job_dir, sample, min_size, input_assembler_list):
         exit()
     else:
         print("\nThe best assembly was done by {0}\n".format(final_assembler))
-
     print('##  END  ##\n')
-
     return destination_file
 
 
