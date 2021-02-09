@@ -54,7 +54,7 @@ def launch(plasmid, cv, pe_file1, pe_file2, s_files, pacbio, sanger, trcontig, u
 
     cmd = cmd + ' -o {0}'.format(ass_dir)
 
-    cmd = 'shovill --assembler spades --R1 {1} --R2 {2} --outdir {2}'.format(pe_file1, pe_file2, ass_dir)
+    cmd = 'shovill --assembler spades --R1 {0} --R2 {1} --outdir {2}'.format(pe_file1, pe_file2, ass_dir)
 
     print('\nSpades:\n{0}\n'.format(cmd))
     print('Spades in process...')

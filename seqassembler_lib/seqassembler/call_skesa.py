@@ -34,7 +34,7 @@ def launch(sample, file1, file2, out_dir):
         print(f"\nVersion SKESA :{version_skesa}\n")
 
         output_assembly = os.path.join(out_dir, "{0}.skesa.fa".format(sample))
-        cmd = 'shovill --assembler skesa --R1 {1} --R2 {2} --outdir {2}'.format(file1, file2, output_assembly)
+        cmd = 'shovill --assembler skesa --R1 {0} --R2 {1} --outdir {2}'.format(file1, file2, output_assembly)
         # cmd = 'skesa --reads {0},{1} --cores 4 --memory 20 > {2}'.format(file1, file2, output_assembly)
         print(cmd)
 
