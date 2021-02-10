@@ -28,25 +28,35 @@ def launch(sample, file1, file2, out_dir):
         log = process.decode("utf-8")
         version_skesa = ""
         for n in log.split("\n"):
-            print(n)
             if "SKESA" in n:
                 version_skesa = n.split(" ")[1]
         print(f"\nVersion SKESA :{version_skesa}\n")
 
+        # Get version of Shovill
+        cmd = 'shovill --version'
+        # launch Shovill for version
+        process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.read()
+        log = process.decode("utf-8")
+        version_shovill = ""
+        for n in log.split("\n"):
+            if "shovill" in n:
+                version_shovill = n.split(" ")[1]
+        print(f"\nVersion Shovill-SKESA :{version_shovill}\n")
+
         output_assembly = os.path.join(out_dir, "{0}.skesa.fa".format(sample))
-        cmd = 'skesa --reads {0},{1} --cores 4 --memory 20 > {2}'.format(file1, file2, output_assembly)
+        cmd = 'shovill --assembler skesa --R1 {0} --R2 {1} --outdir {2}'.format(file1, file2, output_assembly)
         print(cmd)
 
         # launch SKESA
         process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.read()
 
         # make log
-        filename_log = "log_skesa_pipeline.txt"
+        filename_log = "log_shovill_skesa_pipeline.txt"
         header = "Command line executed: {0}\n\n\n{1}".format(cmd, process.decode("utf-8"))
         log_process_output(header, out_dir, filename_log)
 
         current_dir = os.getcwd()
-        # remove useless files
+
         pivot = 0
         for f in os.listdir(current_dir):
             if os.path.isdir(f):

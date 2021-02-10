@@ -5,7 +5,7 @@ import subprocess
 from shutil import rmtree
 
 
-def launch(plasmid, cv, pe_file1, pe_file2, s_files, pacbio, sanger, trcontig, uncontig, out_dir):
+def launch(sample, pe_file1, pe_file2, out_dir):
     # Get version Spades
     cmd = 'spades.py -v'
     # launch spades for version
@@ -13,59 +13,27 @@ def launch(plasmid, cv, pe_file1, pe_file2, s_files, pacbio, sanger, trcontig, u
     log = process.decode("utf-8")
     print("\nVersion Spades :{0}\n".format(log.split(" ")[1]))
 
-    if plasmid:
-        ass_dir = os.path.join(out_dir, 'plasmidspades')
-        i = 0
-        while os.path.exists(ass_dir):
-            i += 1
-            ass_dir = os.path.join(out_dir, 'plasmidspades_{0}'.format(i))
+    # Get version of Shovill
+    cmd = 'shovill --version'
+    # launch Shovill for version
+    process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.read()
+    log = process.decode("utf-8")
+    version_shovill = ""
+    for n in log.split("\n"):
+        if "shovill" in n:
+            version_shovill = n.split(" ")[1]
+    print(f"\nVersion Shovill-SKESA :{version_shovill}\n")
 
-        cmd = 'spades.py --plasmid --careful'
-    else:
-        ass_dir = os.path.join(out_dir, 'spades')
-        i = 0
-        while os.path.exists(ass_dir):
-            i += 1
-            ass_dir = os.path.join(out_dir, 'spades_{0}'.format(i))
-        cmd = 'spades.py --careful'
+    ass_dir = os.path.join(out_dir, 'shovill-spades')
 
-    if pe_file1 != '' and pe_file2 != '':
-        cmd = cmd + ' -1 {0} -2 {1}'.format(pe_file1, pe_file2)
+    cmd = 'shovill --assembler spades --R1 {0} --R2 {1} --outdir {2}'.format(pe_file1, pe_file2, ass_dir)
 
-    for index, f in enumerate(s_files):
-        index += 1
-        if f != '':
-            cmd = cmd + ' --s{0} {1}'.format(index, f)
-
-    if pacbio != '':
-        cmd = cmd + ' --pacbio {0}'.format(pacbio)
-
-    if sanger != '':
-        cmd = cmd + ' --sanger {0}'.format(sanger)
-
-    if trcontig != '':
-        cmd = cmd + ' --trusted-contigs {0}'.format(trcontig)
-
-    if uncontig != '':
-        cmd = cmd + ' --untrusted-contigs {0}'.format(uncontig)
-
-    if cv != 'off':
-        cmd = cmd + ' --cov-cutoff {0}'.format(cv)
-
-    cmd = cmd + ' -o {0}'.format(ass_dir)
-
-    print('\nSpades:\n{0}\n'.format(cmd))
-    print('Spades in process...')
+    print('\nShovill Spades:\n{0}\n'.format(cmd))
+    print('Shovill Spades in process...')
     subprocess.check_output(cmd, shell=True)
 
-    files_to_remove = ["assembly_graph.gfa", "assembly_graph.fastg", "before_rr.fasta"]
-    for file in os.listdir(ass_dir):
-        file_path = os.path.join(ass_dir, file)
-        if os.path.isfile(file_path):
-            if file in files_to_remove:
-                os.remove(file_path)
-        if os.path.isdir(file_path):
-            rmtree(file_path)
+    os.remove(os.path.join(ass_dir, 'contigs.fa'))
+    os.remove(os.path.join(ass_dir, 'spades.fasta'))
 
 
 def pre_main(arguments):
@@ -79,19 +47,14 @@ def pre_main(arguments):
     out_dir = arguments.outdir
     plasmid = arguments.plasmid
     cv = arguments.cv
-    main(pe_file1, pe_file2, s_files, pacbio, sanger, tr_contig, un_contig, out_dir, plasmid, cv)
+    main("toto", pe_file1, pe_file2, out_dir)
 
 
-def main(pe_file1="", pe_file2="", s_files="", pacbio="", sanger="", tr_contig="", un_contig="", out_dir="",
-         plasmid=False, cv="off"):
-
-    s_files = s_files.split(',')
-
-    print('\nOutput dir: {0}'.format(out_dir))
-    print('Input file names: {0} {1} {2} {3} {4} {5} {6}'.format(
-        pe_file1, pe_file2, ' '.join(s_files), pacbio, sanger, tr_contig, un_contig))
-    # backup_assembly(out_dir, sample)
-    launch(plasmid, cv, pe_file1, pe_file2, s_files, pacbio, sanger, tr_contig, un_contig, out_dir)
+def main(file1, file2, sample, out_dir):
+    print(f'\nSample: {sample}')
+    print(f'Input file names: {file1} {file2}')
+    print(f'Output dir: {out_dir}\n')
+    launch(sample, file1, file2, out_dir)
 
 
 def version():
@@ -99,7 +62,7 @@ def version():
 
 
 def run():
-    parser = argparse.ArgumentParser(description='launch A5 assembler - Version ' + version())
+    parser = argparse.ArgumentParser(description='launch shovill spades assembler - Version ' + version())
     parser.add_argument('-1', '--forwardPE', dest='pefile1', action='store', default='sk_s1_pe.fastq',
                         help='Forward fastq or fastqz file')
     parser.add_argument('-2', '--reversePE', dest='pefile2', action='store', default='sk_s2_pe.fastq',
