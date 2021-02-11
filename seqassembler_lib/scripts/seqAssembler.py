@@ -92,7 +92,7 @@ def launch_trimming(job_dir, fq_list, subset, trimmer_type):
         f'\nTrimming launcher:\nin_f {fq_list[0]} in_r {fq_list[1]} output_dir {trimmer_dir} subset_size'
         f' {subset} trimmomatic {tr} sickle {sk}\n')
     trimmer.main(in_f=fq_list[0], in_r=fq_list[1], output_dir=trimmer_dir, subset_size=subset, trimmomatic=tr,
-                 sickle=sk)
+                 sickle=sk, sickle_g=True)
 
     return trimmer_dir
 
@@ -567,7 +567,8 @@ def run():
     parser.add_argument('-tr', '--trimmer', dest="trimmer", default='sickle',
                         help="sickle or trimmomatic or nothing (default: sickle)")
     parser.add_argument('-a', '--assembler', dest="assembler", default="a5",
-                        help="Assembler names [a5,spades,plasmidspades, SKESA] as a comma separated list (default: a5)")
+                        help="Assembler names [a5,spades,plasmidspades, SKESA, 'shovill-spades', 'shovill-SKESA',"
+                             " 'shovill-velvet', 'shovill-megahit'] as a comma separated list (default: a5)")
     parser.add_argument('-sb', '--subset', dest="subset", default='all',
                         help="The number of loaded reads by fastq file in trimmomatic-based trimming (default: all)")
     parser.add_argument('-ms', '--minSize', dest="minSize", default=500,

@@ -43,8 +43,7 @@ def launch(sample, file1, file2, out_dir):
                 version_shovill = n.split(" ")[1]
         print(f"\nVersion Shovill-SKESA :{version_shovill}\n")
 
-        output_assembly = os.path.join(out_dir, "{0}.skesa.fa".format(sample))
-        cmd = 'shovill --assembler skesa --R1 {0} --R2 {1} --outdir {2}'.format(file1, file2, output_assembly)
+        cmd = 'shovill --assembler skesa --R1 {0} --R2 {1} --outdir {2}'.format(file1, file2, out_dir)
         print(cmd)
 
         # launch SKESA
@@ -55,17 +54,10 @@ def launch(sample, file1, file2, out_dir):
         header = "Command line executed: {0}\n\n\n{1}".format(cmd, process.decode("utf-8"))
         log_process_output(header, out_dir, filename_log)
 
-        current_dir = os.getcwd()
+        # remove unwanted file
+        os.remove(os.path.join(out_dir, "skesa.fasta"))
 
-        pivot = 0
-        for f in os.listdir(current_dir):
-            if os.path.isdir(f):
-                continue
-            else:
-                if "{0}.skesa.fa".format(sample) == f:
-                    pivot = 1
-
-        if pivot == 1:
+        if os.path.exists(os.path.join(out_dir, "contigs.fa")):
             print(f'Assembly of {sample} done!')
         else:
             print(f'Assembly of {sample} not done! Check error file log : {filename_log}')

@@ -4,6 +4,8 @@ import argparse
 import subprocess
 from shutil import rmtree
 
+from seqassembler_lib.seqassembler.fasta2bam import log_process_output
+
 
 def launch(sample, pe_file1, pe_file2, out_dir):
     # Get version Spades
@@ -24,16 +26,27 @@ def launch(sample, pe_file1, pe_file2, out_dir):
             version_shovill = n.split(" ")[1]
     print(f"\nVersion Shovill-SKESA :{version_shovill}\n")
 
-    ass_dir = os.path.join(out_dir, 'shovill-spades')
-
-    cmd = 'shovill --assembler spades --R1 {0} --R2 {1} --outdir {2}'.format(pe_file1, pe_file2, ass_dir)
+    cmd = 'shovill --assembler spades --R1 {0} --R2 {1} --outdir {2}'.format(pe_file1, pe_file2, out_dir)
 
     print('\nShovill Spades:\n{0}\n'.format(cmd))
     print('Shovill Spades in process...')
-    subprocess.check_output(cmd, shell=True)
 
-    os.remove(os.path.join(ass_dir, 'contigs.fa'))
-    os.remove(os.path.join(ass_dir, 'spades.fasta'))
+    # launch Shovill Spades
+    process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.read()
+
+    # make log
+    filename_log = "log_shovill_spades_pipeline.txt"
+    header = "Command line executed: {0}\n\n\n{1}".format(cmd, process.decode("utf-8"))
+    log_process_output(header, out_dir, filename_log)
+
+    os.remove(os.path.join(out_dir, 'contigs.gfa'))
+    os.remove(os.path.join(out_dir, 'spades.fasta'))
+
+
+    if os.path.exists(os.path.join(out_dir, "contigs.fa")):
+        print(f'Assembly of {sample} done!')
+    else:
+        print(f'Assembly of {sample} not done! Check error file log : {filename_log}')
 
 
 def pre_main(arguments):
