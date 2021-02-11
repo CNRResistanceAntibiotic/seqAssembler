@@ -43,7 +43,7 @@ def launch(sample, file1, file2, out_dir):
                 version_shovill = n.split(" ")[1]
         print(f"\nVersion Shovill-SKESA :{version_shovill}\n")
 
-        cmd = 'shovill --assembler skesa --R1 {0} --R2 {1} --outdir {2}'.format(file1, file2, out_dir)
+        cmd = 'shovill --assembler skesa --R1 {0} --R2 {1} --outdir {2} --force'.format(file1, file2, out_dir)
         print(cmd)
 
         # launch SKESA

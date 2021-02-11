@@ -26,7 +26,7 @@ def launch(sample, pe_file1, pe_file2, out_dir):
             version_shovill = n.split(" ")[1]
     print(f"\nVersion Shovill-SKESA :{version_shovill}\n")
 
-    cmd = 'shovill --assembler spades --R1 {0} --R2 {1} --outdir {2}'.format(pe_file1, pe_file2, out_dir)
+    cmd = 'shovill --assembler spades --R1 {0} --R2 {1} --outdir {2} --force'.format(pe_file1, pe_file2, out_dir)
 
     print('\nShovill Spades:\n{0}\n'.format(cmd))
     print('Shovill Spades in process...')
