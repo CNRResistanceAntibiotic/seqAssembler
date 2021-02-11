@@ -22,6 +22,7 @@ def subset(in_f, in_r, output_dir):
 
 
 def sickle_call(in_f, in_r, output_dir, read_type, t, q, l, g, x, n):
+    print(in_f, in_r, output_dir, read_type, t, q, l, g, x, n)
     # https://github.com/najoshi/sickle
     # sickle se -t sanger -q 30 -l 40 -x -n -g -f in.fastq -o tr.fastq.gz
     # sickle pe -t illumina -l 80 -q 20 -g -f in_F.fastq -r in_R.fastq -o tr_F.fastq.gz -p tr_R.fastq.gz -s
@@ -43,6 +44,7 @@ def sickle_call(in_f, in_r, output_dir, read_type, t, q, l, g, x, n):
         cmd = 'sickle pe -t {0} -q {1} -l {2}'.format(t, q, l)
         option = (' -g', ' -x', ' -n')
         for index, item in enumerate([g, x, n]):
+            print(index, item)
             if item == 'True':
                 cmd = cmd + option[index]
         cmd = cmd + ' -f {0} -r {1} -o {2} -p {3} -s {4}'.format(in_f, in_r, trim_list[0], trim_list[1], trim_list[2])
