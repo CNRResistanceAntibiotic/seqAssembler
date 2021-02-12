@@ -258,12 +258,10 @@ def launch_spades(assembler, sample, job_dir, fastq_dir, force, trimmer_dir):
 
 
 def select_assembly(job_dir, sample, min_size, input_assembler_list):
-    source_file = ""
+    source_file = final_assembler = ""
 
     # name of final fasta assembly
     destination_file = os.path.join(job_dir, sample + '.fasta')
-
-    final_assembler = ""
 
     for assembler in input_assembler_list:
         if assembler == 'spades':
@@ -389,7 +387,7 @@ def select_assembly(job_dir, sample, min_size, input_assembler_list):
                 del len_and_ids  # free this on memory
 
             with open(destination_file, 'r') as f:
-                n = 0
+                n = 1
                 records = SeqIO.to_dict(SeqIO.parse(f, 'fasta'))
                 for id_contig in ids:
                     rec = records.get(id_contig)
@@ -400,8 +398,8 @@ def select_assembly(job_dir, sample, min_size, input_assembler_list):
                         rec_list.append(rec)
                     else:
                         print(
-                            f"Contig \"{rec.id}\" has been removed on the final assembly (contig length less"
-                            f" than {min_size})")
+                            f"Contig \"{id_contig}\" has been removed on the final assembly (contig length less"
+                            f" than {min_size}bp (contig length = {len(rec.seq)}bp))")
             SeqIO.write(rec_list, open(destination_file, 'w'), 'fasta')
             final_assembler = assembler
             print('The assembly contigs have been renamed !')
