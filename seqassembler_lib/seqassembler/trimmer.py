@@ -22,7 +22,6 @@ def subset(in_f, in_r, output_dir):
 
 
 def sickle_call(in_f, in_r, output_dir, read_type, t, q, l, g, x, n):
-    print(in_f, in_r, output_dir, read_type, t, q, l, g, x, n)
     # https://github.com/najoshi/sickle
     # sickle se -t sanger -q 30 -l 40 -x -n -g -f in.fastq -o tr.fastq.gz
     # sickle pe -t illumina -l 80 -q 20 -g -f in_F.fastq -r in_R.fastq -o tr_F.fastq.gz -p tr_R.fastq.gz -s
@@ -32,7 +31,7 @@ def sickle_call(in_f, in_r, output_dir, read_type, t, q, l, g, x, n):
         cmd = 'sickle se -t {0} -q {1} -l {2}'.format(t, q, l)
         option = (' -g', ' -x', ' -n')
         for index, item in enumerate([g, x, n]):
-            if item == 'True':
+            if item:
                 cmd = cmd + option[index]
         cmd = cmd + ' -f {0} -o {1} '.format(in_f, trim_list[0])
         print('\nTrimming unpaired file {0} with sickle:\n{1}\n'.format(in_f, cmd))
@@ -44,8 +43,7 @@ def sickle_call(in_f, in_r, output_dir, read_type, t, q, l, g, x, n):
         cmd = 'sickle pe -t {0} -q {1} -l {2}'.format(t, q, l)
         option = (' -g', ' -x', ' -n')
         for index, item in enumerate([g, x, n]):
-            print(index, item)
-            if item == 'True':
+            if item:
                 cmd = cmd + option[index]
         cmd = cmd + ' -f {0} -r {1} -o {2} -p {3} -s {4}'.format(in_f, in_r, trim_list[0], trim_list[1], trim_list[2])
         print('\nTrimming paired-end files {0} and {1} with sickle:\n{2}\n'.format(in_f, in_r, cmd))
@@ -154,8 +152,7 @@ def main(in_f, in_r, output_dir, subset_size="all", trim_c="2:30:10", trim_l=3, 
     # PARSE SICKLE ARGUMENTS FOR READ TRIMMING
     if sickle:
         sickle_call(input_list[0], input_list[1], output_dir, read_type, sickle_t, sickle_q, sickle_l, sickle_g,
-                    sickle_x,
-                    sickle_n)
+                    sickle_x, sickle_n)
 
 
 def version():

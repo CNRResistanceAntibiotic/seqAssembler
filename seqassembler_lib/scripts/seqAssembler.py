@@ -308,6 +308,22 @@ def select_assembly(job_dir, sample, min_size, input_assembler_list):
                 print(f"The assembly file of {assembler} not exist. This assembler is not keep for further steps.")
                 continue
 
+        elif assembler == 'shovill-megahit':
+            source_file = os.path.join(job_dir, 'shovill-megahit', 'contigs.fa')
+            if os.path.exists(source_file):
+                print(f"The assembly file of {assembler} exist.")
+            else:
+                print(f"The assembly file of {assembler} not exist. This assembler is not keep for further steps.")
+                continue
+
+        elif assembler == 'shovill-velvet':
+            source_file = os.path.join(job_dir, 'shovill-velvet', 'contigs.fa')
+            if os.path.exists(source_file):
+                print(f"The assembly file of {assembler} exist.")
+            else:
+                print(f"The assembly file of {assembler} not exist. This assembler is not keep for further steps.")
+                continue
+
         print(f'\n\n## Assembly with {assembler} done!  ##')
         print("Order Fasta assembled by Sequence length")
 
