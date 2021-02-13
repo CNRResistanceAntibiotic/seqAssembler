@@ -11,7 +11,7 @@ def launch(plasmid, cv, pe_file1, pe_file2, s_files, pacbio, sanger, trcontig, u
     # launch spades for version
     process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.read()
     log = process.decode("utf-8")
-    print("\nVersion Spades :{0}\n".format(log.split(" ")[1]))
+    print("\nVersion Spades :{0}\n".format(log.split("SPAdes genome assembler ")[1]))
 
     if plasmid:
         ass_dir = os.path.join(out_dir, 'plasmidspades')
