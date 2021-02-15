@@ -13,7 +13,7 @@ def launch(sample, pe_file1, pe_file2, out_dir):
     # launch spades for version
     process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.read()
     log = process.decode("utf-8")
-    print("\nVersion Spades :{0}\n".format(log.split(" ")[1]))
+    print("\nVersion Spades :{0}\n".format(log.split("SPAdes genome assembler ")[1]))
 
     # Get version of Shovill
     cmd = 'shovill --version'
@@ -24,7 +24,7 @@ def launch(sample, pe_file1, pe_file2, out_dir):
     for n in log.split("\n"):
         if "shovill" in n:
             version_shovill = n.split(" ")[1]
-    print(f"\nVersion Shovill-SKESA :{version_shovill}\n")
+    print(f"\nVersion Shovill-spades :{version_shovill}\n")
 
     cmd = 'shovill --assembler spades --R1 {0} --R2 {1} --outdir {2} --force'.format(pe_file1, pe_file2, out_dir)
 
