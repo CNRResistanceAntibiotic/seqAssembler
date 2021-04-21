@@ -1,4 +1,5 @@
 import argparse
+import logging
 import os
 from collections import OrderedDict
 
@@ -28,7 +29,7 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
     if not os.path.exists(out_file) or force:
         df = pd.DataFrame()
         for ctg in contigs:
-            print(f'Bam data for {ctg.id} ({len(ctg)}-bp) in process...')
+            logging.info(f'Bam data for {ctg.id} ({len(ctg)}-bp) in process...')
 
             # Extract depth stats
             data = pysamstats.load_variation(bam, truncate=True, pad=True, max_depth=400, fafile=fas_file,
@@ -45,10 +46,10 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
                                      ('T_depth', data['T']), ('C_depth', data['C']), ('G_depth', data['G']),
                                      ('N_depth', data['N']),
                                      ('Deletion_depth', data.deletions), ('Insertion_depth', data.insertions)])
-                df = pd.DataFrame(cv_dic, index=positions)
-                df.index.name = 'Positions'
+                df_1 = pd.DataFrame(cv_dic, index=positions)
+                df_1.index.name = 'Positions'
                 out_prefix = os.path.join(out_dir, '{0}_bam_stats'.format(ctg.id))
-                df.to_csv(out_prefix + '.tsv', sep='\t', index=True)
+                df_1.to_csv(out_prefix + '.tsv', sep='\t', index=True)
 
                 if plt_report:
                     # Depth contig report as png plot
@@ -85,10 +86,10 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
                 bqDic = OrderedDict(
                     [('RMS_base_quality', data.rms_baseq), ('RMS_match_base_quality', data.rms_baseq_matches),
                      ('RMS_mismatch_base_quality', data.rms_baseq_mismatches)])
-                df = pd.DataFrame(bqDic, index=positions)
-                df.index.name = 'Positions'
-                out_prefix = os.path.join(out_dir, '{0}_assembly_qual'.format(ctg.id))
-                df.to_csv(out_prefix + '.tsv', sep='\t', index=True)
+                df_2 = pd.DataFrame(bqDic, index=positions)
+                df_2.index.name = 'Positions'
+                out_prefix = os.path.join(out_dir, f'{ctg.id}_assembly_qual')
+                df_2.to_csv(out_prefix + '.tsv', sep='\t', index=True)
 
                 if plt_report:
                     # Base quality report as png plot
@@ -116,10 +117,10 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
                 # Mapping quality report as tsv file
                 mq_dic = OrderedDict([('RMS_mapq', data.rms_mapq), ('MAX_mapq', data.max_mapq),
                                      ('Nbr_mapqO', data.reads_mapq0)])
-                df = pd.DataFrame(mq_dic, index=positions)
-                df.index.name = 'Positions'
-                out_prefix = os.path.join(out_dir, '{0}_assembly_mapq'.format(ctg.id))
-                df.to_csv(out_prefix + '.tsv', sep='\t', index=True)
+                df_3 = pd.DataFrame(mq_dic, index=positions)
+                df_3.index.name = 'Positions'
+                out_prefix = os.path.join(out_dir, f'{ctg.id}_assembly_mapq')
+                df_3.to_csv(out_prefix + '.tsv', sep='\t', index=True)
 
                 if plt_report:
                     # Mapping quality report as png plot
@@ -140,12 +141,12 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
                     plt.savefig(out_prefix + '.png')
                     plt.close()
 
-        print('\nWrite the main results in {0}:'.format(out_file))
+        logging.info(f'\nWrite the main results in {out_file}:')
         # df.boxplot(by='ctg', column=['Depth', 'Match_depth', 'Basq', 'Match_basq', 'Mapq'])
         # plt.savefig(os.path.splitext(outfile)[0]+'.png')
         results = []
         for ctg in [x.id for x in contigs] + ['overall']:
-            print('{0} in process...'.format(ctg))
+            logging.info(f'{ctg} in process...')
             res_dic = OrderedDict([('ID', ctg)])
             if ctg == 'overall':
                 values = df
@@ -156,15 +157,15 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
 
             for i in ['Depth', 'Match_depth', 'Basq', 'Match_basq', 'Mapq']:
                 N20 = round(100 * values[values[i] >= 20].index.size / float(values.index.size), 2)
-                res_dic['Perc_{0}_>=20'.format(i)] = N20
+                res_dic[f'Perc_{i}_>=20'] = N20
                 N30 = round(100 * values[values[i] >= 30].index.size / float(values.index.size), 2)
                 res_dic['Perc_{0}_>=30'.format(i)] = N30
                 for j in ["mean", "std", "max", "min"]:
-                    key = '{0}_{1}'.format(i, j)
+                    key = f'{i}_{j}'
                     value = data.loc[j, i].round(2)
                     res_dic[key] = value
                 for j in ["10%", "50%", "90%"]:
-                    key = '{0}_{1}_percentile'.format(i, j)
+                    key = f'{i}_{j}_percentile'
                     value = data.loc[j, i].round(2)
                     res_dic[key] = value
             seq = list(values['Seq'])
@@ -177,7 +178,7 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
         df = pd.DataFrame(results)
         df.to_csv(out_file, sep='\t', index=False)
     else:
-        print('\nThe main ouput file already done!\n')
+        logging.info('\nThe main output file already done!\n')
 
     return out_file, contigs
 
@@ -199,7 +200,7 @@ def filter_contigs(result_file, contigs, m_size, m_basq, m_mapq, m_depth, rename
     del_IDs = []
     for data in results:
         ID = data['ID']
-        print('Filtering {0}'.format(ID))
+        print(f'Filtering {ID}')
         if float(data['Depth_mean']) <= m_depth:
             del_IDs.append(ID)
         if float(data['Mapq_mean']) <= m_mapq:
@@ -222,10 +223,10 @@ def filter_contigs(result_file, contigs, m_size, m_basq, m_mapq, m_depth, rename
         if ctg.id not in del_IDs:
             n += 1
             if rename:
-                ctg.id = 'ctg_{0}'.format(n)
+                ctg.id = f'ctg_{n}'
             records.append(ctg)
-    print('\n{0} deleted contigs'.format(len(del_IDs)))
-    print('{0} remaining contigs\n'.format(len(records)))
+    logging.info(f'\n{len(del_IDs)} deleted contigs')
+    logging.info(f'{len(records)} remaining contigs\n')
 
     # Write the filtered contigs
     out_file = os.path.join(os.path.dirname(result_file), 'assembly_filtered.fas')

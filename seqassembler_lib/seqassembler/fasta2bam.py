@@ -104,7 +104,6 @@ def log_process_output(output, work_dir_path, filename_log):
     try:
         with open("{0}/{1}".format(work_dir_path, filename_log), 'w') as log_file:
             log_file.write(output)
-
     except IOError as e:
         return e
 

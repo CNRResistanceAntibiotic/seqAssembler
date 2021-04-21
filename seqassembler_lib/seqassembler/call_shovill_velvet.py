@@ -1,22 +1,21 @@
 #!/usr/bin/python
-import glob
+import logging
 import os
 import subprocess
 import argparse
-from shutil import rmtree
 
 from seqassembler_lib.seqassembler.fasta2bam import log_process_output
 
 
 def launch(sample, file1, file2, out_dir):
-    print(f'\nAssembly of {sample} in {out_dir} with {file1} and {file2}')
+    logging.info(f'\nAssembly of {sample} in {out_dir} with {file1} and {file2}')
     out_dir = os.path.abspath(out_dir)
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
-    print('File1: {0}'.format(file1))
-    print('File2: {0}'.format(file2))
+    logging.info(f'File1: {file1}')
+    logging.info(f'File2: {file2}')
     if file1.split('_R1') == file2.split('_R2'):
-        print('In process...')
+        logging.info('In process...')
 
         # set current directory to velvet work directory
         os.chdir(out_dir)
@@ -30,7 +29,7 @@ def launch(sample, file1, file2, out_dir):
         for n in log.split("\n"):
             if "Version" in n:
                 version_velvet = n.split(" ")[1]
-        print(f"\nVersion velvet :{version_velvet}\n")
+        logging.info(f"\nVersion velvet :{version_velvet}\n")
 
         # Get version of Shovill
         cmd = 'shovill --version'
@@ -41,17 +40,17 @@ def launch(sample, file1, file2, out_dir):
         for n in log.split("\n"):
             if "shovill" in n:
                 version_shovill = n.split(" ")[1]
-        print(f"\nVersion Shovill-velvet :{version_shovill}\n")
+        logging.info(f"\nVersion Shovill-velvet :{version_shovill}\n")
 
-        cmd = 'shovill --assembler velvet --R1 {0} --R2 {1} --outdir {2} --force'.format(file1, file2, out_dir)
-        print(cmd)
+        cmd = f'shovill --assembler velvet --R1 {file1} --R2 {file2} --outdir {out_dir} --ram 20 --force'
+        logging.info(cmd)
 
         # launch velvet
         process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.read()
 
         # make log
         filename_log = "log_shovill_velvet_pipeline.txt"
-        header = "Command line executed: {0}\n\n\n{1}".format(cmd, process.decode("utf-8"))
+        header = f"Command line executed: {cmd}\n\n\n{process.decode('utf-8')}"
         log_process_output(header, out_dir, filename_log)
 
         # remove unwanted files
@@ -59,9 +58,9 @@ def launch(sample, file1, file2, out_dir):
         os.remove(os.path.join(out_dir, "velvet.fasta"))
 
         if os.path.exists(os.path.join(out_dir, "contigs.fa")):
-            print(f'Assembly of {sample} done!')
+            logging.info(f'Assembly of {sample} done!')
         else:
-            print(f'Assembly of {sample} not done! Check error file log : {filename_log}')
+            logging.info(f'Assembly of {sample} not done! Check error file log : {filename_log}')
 
 
 def pre_main(arguments):
@@ -73,9 +72,9 @@ def pre_main(arguments):
 
 
 def main(file1, file2, sample, out_dir):
-    print(f'\nSample: {sample}')
-    print(f'Input file names: {file1} {file2}')
-    print(f'Output dir: {out_dir}\n')
+    logging.info(f'\nSample: {sample}')
+    logging.info(f'Input file names: {file1} {file2}')
+    logging.info(f'Output dir: {out_dir}\n')
     launch(sample, file1, file2, out_dir)
 
 
@@ -86,9 +85,9 @@ def version():
 def run():
     parser = argparse.ArgumentParser(description='launch shovill velvet assembler - Version ' + version())
     parser.add_argument('-file1', '--readFile_input1', dest='file1', default='file1.fastq',
-                        help='Forward fastq or fastqz file')
+                        help='Forward fastq or fastq.gz file')
     parser.add_argument('-file2', '--readFile_input2', dest='file2', default='file2.fastq',
-                        help='Reverse fastq or fastqz file')
+                        help='Reverse fastq or fastq.gz file')
     parser.add_argument('-id', '--sampleName', dest='sample', help="ID of sample")
     parser.add_argument('-out', '--outputDir', dest='outdir', help="Name of output directory")
     parser.add_argument('-V', '--version', action='version', version='rgi-' + version(), help="Prints version number")

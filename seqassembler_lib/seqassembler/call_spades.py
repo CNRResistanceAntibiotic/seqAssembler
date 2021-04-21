@@ -1,4 +1,5 @@
 #!/usr/bin/python
+import logging
 import os
 import argparse
 import subprocess
@@ -11,53 +12,41 @@ def launch(plasmid, cv, pe_file1, pe_file2, s_files, pacbio, sanger, trcontig, u
     # launch spades for version
     process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.read()
     log = process.decode("utf-8")
-    print("\nVersion Spades :{0}\n".format(log.split("SPAdes genome assembler ")[1]))
-
+    logging.info(f"\nVersion Spades :{log.split('SPAdes genome assembler ')[1]}\n")
     if plasmid:
         ass_dir = os.path.join(out_dir, 'plasmidspades')
         i = 0
         while os.path.exists(ass_dir):
             i += 1
-            ass_dir = os.path.join(out_dir, 'plasmidspades_{0}'.format(i))
-
+            ass_dir = os.path.join(out_dir, f'plasmidspades_{i}')
         cmd = 'spades.py --plasmid --careful'
     else:
         ass_dir = os.path.join(out_dir, 'spades')
         i = 0
         while os.path.exists(ass_dir):
             i += 1
-            ass_dir = os.path.join(out_dir, 'spades_{0}'.format(i))
+            ass_dir = os.path.join(out_dir, f'spades_{i}')
         cmd = 'spades.py --careful'
-
     if pe_file1 != '' and pe_file2 != '':
-        cmd = cmd + ' -1 {0} -2 {1}'.format(pe_file1, pe_file2)
-
+        cmd = cmd + f' -1 {pe_file1} -2 {pe_file2}'
     for index, f in enumerate(s_files):
         index += 1
         if f != '':
-            cmd = cmd + ' --s{0} {1}'.format(index, f)
-
+            cmd = cmd + f' --s{index} {f}'
     if pacbio != '':
-        cmd = cmd + ' --pacbio {0}'.format(pacbio)
-
+        cmd = cmd + f' --pacbio {pacbio}'
     if sanger != '':
-        cmd = cmd + ' --sanger {0}'.format(sanger)
-
+        cmd = cmd + f' --sanger {sanger}'
     if trcontig != '':
-        cmd = cmd + ' --trusted-contigs {0}'.format(trcontig)
-
+        cmd = cmd + f' --trusted-contigs {trcontig}'
     if uncontig != '':
-        cmd = cmd + ' --untrusted-contigs {0}'.format(uncontig)
-
+        cmd = cmd + f' --untrusted-contigs {uncontig}'
     if cv != 'off':
-        cmd = cmd + ' --cov-cutoff {0}'.format(cv)
-
-    cmd = cmd + ' -o {0}'.format(ass_dir)
-
-    print('\nSpades:\n{0}\n'.format(cmd))
-    print('Spades in process...')
+        cmd = cmd + f' --cov-cutoff {cv}'
+    cmd = cmd + f' -o {ass_dir}'
+    logging.info(f'\nSpades:\n{cmd}\n')
+    logging.info('Spades in process...')
     subprocess.check_output(cmd, shell=True)
-
     files_to_remove = ["assembly_graph.gfa", "assembly_graph.fastg", "before_rr.fasta"]
     for file in os.listdir(ass_dir):
         file_path = os.path.join(ass_dir, file)
@@ -87,9 +76,8 @@ def main(pe_file1="", pe_file2="", s_files="", pacbio="", sanger="", tr_contig="
 
     s_files = s_files.split(',')
 
-    print('\nOutput dir: {0}'.format(out_dir))
-    print('Input file names: {0} {1} {2} {3} {4} {5} {6}'.format(
-        pe_file1, pe_file2, ' '.join(s_files), pacbio, sanger, tr_contig, un_contig))
+    logging.info(f'\nOutput dir: {out_dir}')
+    logging.info(f'Input file names: {pe_file1} {pe_file2} {" ".join(s_files)} {pacbio} {sanger} {tr_contig} {un_contig}')
     # backup_assembly(out_dir, sample)
     launch(plasmid, cv, pe_file1, pe_file2, s_files, pacbio, sanger, tr_contig, un_contig, out_dir)
 
@@ -101,18 +89,18 @@ def version():
 def run():
     parser = argparse.ArgumentParser(description='launch A5 assembler - Version ' + version())
     parser.add_argument('-1', '--forwardPE', dest='pefile1', action='store', default='sk_s1_pe.fastq',
-                        help='Forward fastq or fastqz file')
+                        help='Forward fastq or fastq.gz file')
     parser.add_argument('-2', '--reversePE', dest='pefile2', action='store', default='sk_s2_pe.fastq',
-                        help='Reverse fastq or fastqz file')
+                        help='Reverse fastq or fastq.gz file')
     parser.add_argument('-s', '--unpaired', dest='upfiles', action='store', default='sk_s3_up.fastq',
-                        help='Unpaired fastq or fastqz file')
+                        help='Unpaired fastq or fastq.gz file')
     parser.add_argument('-pb', '--pacbio', dest='pacbio', action='store', default='', help='PacBio file')
     parser.add_argument('-sg', '--sanger', dest='sanger', action='store', default='', help='Sanger file')
     parser.add_argument('-tc', '--trustedcontig', dest='trcontig', action='store', default='',
                         help='Trusted contig file')
     parser.add_argument('-uc', '--untrustedContig', dest='uncontig', action='store', default='',
                         help='UnTrusted contig file')
-    parser.add_argument('-pl', '--plasmid', dest='plasmid', action='store_true', help='Plamide assembly')
+    parser.add_argument('-pl', '--plasmid', dest='plasmid', action='store_true', help='Plasmide assembly')
     parser.add_argument('-cv', '--cv', dest='cv', action='store', default='off',
                         help='Coverage cutoff value (a positive float number or \'auto\' or \'off\')'
                              ' [default: \'off\']')
