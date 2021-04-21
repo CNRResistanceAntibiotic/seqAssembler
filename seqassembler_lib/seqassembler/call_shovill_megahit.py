@@ -1,5 +1,4 @@
 #!/usr/bin/python
-import logging
 import os
 import subprocess
 import argparse
@@ -8,14 +7,14 @@ from seqassembler_lib.seqassembler.fasta2bam import log_process_output
 
 
 def launch(sample, file1, file2, out_dir):
-    logging.info(f'\nAssembly of {sample} in {out_dir} with {file1} and {file2}')
+    print(f'\nAssembly of {sample} in {out_dir} with {file1} and {file2}')
     out_dir = os.path.abspath(out_dir)
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
-    logging.info(f'File1: {file1}')
-    logging.info(f'File2: {file2}')
+    print(f'File1: {file1}')
+    print(f'File2: {file2}')
     if file1.split('_R1') == file2.split('_R2'):
-        logging.info('In process...')
+        print('In process...')
 
         # set current directory to megahit work directory
         os.chdir(out_dir)
@@ -29,7 +28,7 @@ def launch(sample, file1, file2, out_dir):
         for n in log.split("\n"):
             if "MEGAHIT" in n:
                 version_megahit = n.split(" ")[1]
-        logging.info(f"\nVersion megahit :{version_megahit}\n")
+        print(f"\nVersion megahit :{version_megahit}\n")
 
         # Get version of Shovill
         cmd = 'shovill --version'
@@ -40,10 +39,10 @@ def launch(sample, file1, file2, out_dir):
         for n in log.split("\n"):
             if "shovill" in n:
                 version_shovill = n.split(" ")[1]
-        logging.info(f"\nVersion Shovill-megahit :{version_shovill}\n")
+        print(f"\nVersion Shovill-megahit :{version_shovill}\n")
 
         cmd = f'shovill --assembler megahit --R1 {file1} --R2 {file2} --outdir {out_dir} --ram 20 --force'
-        logging.info(cmd)
+        print(cmd)
 
         # launch megahit
         process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.read()
@@ -70,9 +69,9 @@ def pre_main(arguments):
 
 
 def main(file1, file2, sample, out_dir):
-    logging.info(f'\nSample: {sample}')
-    logging.info(f'Input file names: {file1} {file2}')
-    logging.info(f'Output dir: {out_dir}\n')
+    print(f'\nSample: {sample}')
+    print(f'Input file names: {file1} {file2}')
+    print(f'Output dir: {out_dir}\n')
     launch(sample, file1, file2, out_dir)
 
 

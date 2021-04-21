@@ -1,5 +1,4 @@
 #!/usr/bin/python
-import logging
 import os
 import argparse
 import subprocess
@@ -12,7 +11,7 @@ def launch(plasmid, cv, pe_file1, pe_file2, s_files, pacbio, sanger, trcontig, u
     # launch spades for version
     process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.read()
     log = process.decode("utf-8")
-    logging.info(f"\nVersion Spades :{log.split('SPAdes genome assembler ')[1]}\n")
+    print(f"\nVersion Spades :{log.split('SPAdes genome assembler ')[1]}\n")
     if plasmid:
         ass_dir = os.path.join(out_dir, 'plasmidspades')
         i = 0
@@ -44,8 +43,8 @@ def launch(plasmid, cv, pe_file1, pe_file2, s_files, pacbio, sanger, trcontig, u
     if cv != 'off':
         cmd = cmd + f' --cov-cutoff {cv}'
     cmd = cmd + f' -o {ass_dir}'
-    logging.info(f'\nSpades:\n{cmd}\n')
-    logging.info('Spades in process...')
+    print(f'\nSpades:\n{cmd}\n')
+    print('Spades in process...')
     subprocess.check_output(cmd, shell=True)
     files_to_remove = ["assembly_graph.gfa", "assembly_graph.fastg", "before_rr.fasta"]
     for file in os.listdir(ass_dir):
@@ -76,8 +75,8 @@ def main(pe_file1="", pe_file2="", s_files="", pacbio="", sanger="", tr_contig="
 
     s_files = s_files.split(',')
 
-    logging.info(f'\nOutput dir: {out_dir}')
-    logging.info(f'Input file names: {pe_file1} {pe_file2} {" ".join(s_files)} {pacbio} {sanger} {tr_contig} {un_contig}')
+    print(f'\nOutput dir: {out_dir}')
+    print(f'Input file names: {pe_file1} {pe_file2} {" ".join(s_files)} {pacbio} {sanger} {tr_contig} {un_contig}')
     # backup_assembly(out_dir, sample)
     launch(plasmid, cv, pe_file1, pe_file2, s_files, pacbio, sanger, tr_contig, un_contig, out_dir)
 

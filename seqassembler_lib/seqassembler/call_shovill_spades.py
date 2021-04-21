@@ -1,5 +1,4 @@
 #!/usr/bin/python
-import logging
 import os
 import argparse
 import subprocess
@@ -13,7 +12,7 @@ def launch(sample, pe_file1, pe_file2, out_dir):
     # launch spades for version
     process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.read()
     log = process.decode("utf-8")
-    logging.info(f"\nVersion Spades :{log.split('SPAdes genome assembler ')[1]}\n")
+    print(f"\nVersion Spades :{log.split('SPAdes genome assembler ')[1]}\n")
 
     # Get version of Shovill
     cmd = 'shovill --version'
@@ -24,12 +23,12 @@ def launch(sample, pe_file1, pe_file2, out_dir):
     for n in log.split("\n"):
         if "shovill" in n:
             version_shovill = n.split(" ")[1]
-    logging.info(f"\nVersion Shovill-spades :{version_shovill}\n")
+    print(f"\nVersion Shovill-spades :{version_shovill}\n")
 
     cmd = f'shovill --assembler spades --R1 {pe_file1} --R2 {pe_file2} --outdir {out_dir} --ram 20 --force'
 
-    logging.info(f'\nShovill Spades:\n{cmd}\n')
-    logging.info('Shovill Spades in process...')
+    print(f'\nShovill Spades:\n{cmd}\n')
+    print('Shovill Spades in process...')
 
     # launch Shovill Spades
     process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.read()
@@ -43,9 +42,9 @@ def launch(sample, pe_file1, pe_file2, out_dir):
     os.remove(os.path.join(out_dir, 'spades.fasta'))
 
     if os.path.exists(os.path.join(out_dir, "contigs.fa")):
-        logging.info(f'Assembly of {sample} done!')
+        print(f'Assembly of {sample} done!')
     else:
-        logging.info(f'Assembly of {sample} not done! Check error file log : {filename_log}')
+        print(f'Assembly of {sample} not done! Check error file log : {filename_log}')
 
 
 def pre_main(arguments):
@@ -63,9 +62,9 @@ def pre_main(arguments):
 
 
 def main(file1, file2, sample, out_dir):
-    logging.info(f'\nSample: {sample}')
-    logging.info(f'Input file names: {file1} {file2}')
-    logging.info(f'Output dir: {out_dir}\n')
+    print(f'\nSample: {sample}')
+    print(f'Input file names: {file1} {file2}')
+    print(f'Output dir: {out_dir}\n')
     launch(sample, file1, file2, out_dir)
 
 

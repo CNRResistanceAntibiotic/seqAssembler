@@ -13,7 +13,7 @@ def alignment_bwa(fasta_file, fastq_file1, fastq_file2, threads=8, force=False):
         os.mkdir(bwa_index_dir)
     else:
         print("\nIndex BWA already exist!\n")
-        print("At {0}".format(bwa_index_dir))
+        print(f"At {bwa_index_dir}")
 
     index_fasta_file = os.path.join(bwa_index_dir, os.path.basename(fasta_file))
     shutil.copy(fasta_file, index_fasta_file)
@@ -32,16 +32,15 @@ def alignment_bwa(fasta_file, fastq_file1, fastq_file2, threads=8, force=False):
         os.remove(index_fasta_file)
 
         # alignment
-        cmd = "bwa mem -t {0} {1} {2} {3} > {4}".format(threads, index_fasta_file, fastq_file1, fastq_file2,
-                                                                 sam_file)
+        cmd = f"bwa mem -t {threads} {index_fasta_file} {fastq_file1} {fastq_file2} > {sam_file}"
         process = Popen(cmd, shell=True, stdout=PIPE, stderr=STDOUT).stdout.read()
 
         # make log
         filename_log = "logBWA_MEM.txt"
-        header = "Command line executed: {0}\n\n\n{1}".format(cmd, process.decode("utf-8"))
+        header = f"Command line executed: {cmd}\n\n\n{process.decode('utf-8')}"
         log_process_output(header, os.path.dirname(bam_file), filename_log)
     else:
-        print('\nAlignment file {0} already done\n'.format(bam_file))
+        print(f'\nAlignment file {bam_file} already done\n')
     return sam_file
 
 

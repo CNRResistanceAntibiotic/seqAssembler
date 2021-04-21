@@ -1,6 +1,5 @@
 #!/usr/bin/python
 import glob
-import logging
 import os
 import subprocess
 import argparse
@@ -15,20 +14,20 @@ def backup_assembly(out_dir, sample):
                 '.final.scaffolds.fastq', 'pe.sort.bam', '.pe.sort.bam.bai']:
         for filename in glob.glob(os.path.join(out_dir, sample + ext)):
             if filename:
-                logging.info('Previous assembly file {0} detected'.format(filename))
-                logging.info('Backup of file {0} as file {1}_previous'.format(filename, filename))
+                print('Previous assembly file {0} detected'.format(filename))
+                print('Backup of file {0} as file {1}_previous'.format(filename, filename))
                 os.rename(filename, filename + '_previous')
 
 
 def launch(sample, file1, file2, out_dir):
-    logging.info(f'\nAssembly of {sample} in {out_dir} with {file1} and {file2}')
+    print(f'\nAssembly of {sample} in {out_dir} with {file1} and {file2}')
     out_dir = os.path.abspath(out_dir)
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
-    logging.info(f'File1: {file1}')
-    logging.info(f'File2: {file2}')
+    print(f'File1: {file1}')
+    print(f'File2: {file2}')
     if file1.split('_R1') == file2.split('_R2'):
-        logging.info('In process...')
+        print('In process...')
         # set current directory to a5 work directory
         os.chdir(out_dir)
         # Get version of A5
@@ -40,11 +39,11 @@ def launch(sample, file1, file2, out_dir):
         for n in log.split("\n"):
             if "A5-miseq" in n:
                 version_a5 = n.split(" ")[2]
-        logging.info(f"\nVersion A5 :{version_a5}\n")
+        print(f"\nVersion A5 :{version_a5}\n")
 
         arguments = f" --end=5 {file1} {file2} {sample}"
         cmd = 'a5_pipeline.pl' + arguments
-        logging.info(cmd)
+        print(cmd)
 
         # launch a5
         process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.read()
@@ -68,7 +67,7 @@ def launch(sample, file1, file2, out_dir):
                     pivot = 1
 
         if pivot == 1:
-            logging.info(f'Assembly of {sample} done!')
+            print(f'Assembly of {sample} done!')
 
             inp_stat_file = os.path.join(out_dir, sample + '.assembly_stats.csv')
             if os.path.exists(inp_stat_file):
@@ -92,7 +91,7 @@ def launch(sample, file1, file2, out_dir):
                         if n > 0:
                             f.write('\t'.join(line.split('\t')[:-1]) + '\n')
         else:
-            logging.error(f'Assembly of {sample} not done! Check error file log : {filename_log}')
+            print(f'Assembly of {sample} not done! Check error file log : {filename_log}')
 
 
 def pre_main(arguments):
@@ -104,9 +103,9 @@ def pre_main(arguments):
 
 
 def main(file1, file2, sample, out_dir):
-    logging.info(f'\nSample: {sample}')
-    logging.info(f'Input file names: {file1} {file2}')
-    logging.info(f'Output dir: {out_dir}\n')
+    print(f'\nSample: {sample}')
+    print(f'Input file names: {file1} {file2}')
+    print(f'Output dir: {out_dir}\n')
     backup_assembly(out_dir, sample)
     launch(sample, file1, file2, out_dir)
 

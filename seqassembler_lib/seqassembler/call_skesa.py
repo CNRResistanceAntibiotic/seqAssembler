@@ -1,5 +1,4 @@
 #!/usr/bin/python
-import logging
 import os
 import subprocess
 import argparse
@@ -8,14 +7,14 @@ from seqassembler_lib.seqassembler.fasta2bam import log_process_output
 
 
 def launch(sample, file1, file2, out_dir):
-    logging.info(f'\nAssembly of {sample} in {out_dir} with {file1} and {file2}')
+    print(f'\nAssembly of {sample} in {out_dir} with {file1} and {file2}')
     out_dir = os.path.abspath(out_dir)
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
-    logging.info(f'File1: {file1}')
-    logging.info(f'File2: {file2}')
+    print(f'File1: {file1}')
+    print(f'File2: {file2}')
     if file1.split('_R1') == file2.split('_R2'):
-        logging.info('In process...')
+        print('In process...')
         # set current directory to SKESA work directory
         os.chdir(out_dir)
         # Get version of SKESA
@@ -25,14 +24,14 @@ def launch(sample, file1, file2, out_dir):
         log = process.decode("utf-8")
         version_skesa = ""
         for n in log.split("\n"):
-            logging.info(n)
+            print(n)
             if "SKESA" in n:
                 version_skesa = n.split(" ")[1]
-        logging.info(f"\nVersion SKESA :{version_skesa}\n")
+        print(f"\nVersion SKESA :{version_skesa}\n")
 
         output_assembly = os.path.join(out_dir, f"{sample}.skesa.fa")
         cmd = f'skesa --reads {file1},{file2} --cores 4 --memory 20 > {output_assembly}'
-        logging.info(cmd)
+        print(cmd)
 
         # launch SKESA
         process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.read()
@@ -53,9 +52,9 @@ def launch(sample, file1, file2, out_dir):
                     pivot = 1
 
         if pivot == 1:
-            logging.info(f'Assembly of {sample} done!')
+            print(f'Assembly of {sample} done!')
         else:
-            logging.error(f'Assembly of {sample} not done! Check error file log : {filename_log}')
+            print(f'Assembly of {sample} not done! Check error file log : {filename_log}')
 
 
 def pre_main(arguments):

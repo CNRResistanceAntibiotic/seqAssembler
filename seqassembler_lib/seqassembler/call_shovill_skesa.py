@@ -1,5 +1,4 @@
 #!/usr/bin/python
-import logging
 import os
 import subprocess
 import argparse
@@ -8,14 +7,14 @@ from seqassembler_lib.seqassembler.fasta2bam import log_process_output
 
 
 def launch(sample, file1, file2, out_dir):
-    logging.info(f'\nAssembly of {sample} in {out_dir} with {file1} and {file2}')
+    print(f'\nAssembly of {sample} in {out_dir} with {file1} and {file2}')
     out_dir = os.path.abspath(out_dir)
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
-    logging.info('File1: {0}'.format(file1))
-    logging.info('File2: {0}'.format(file2))
+    print('File1: {0}'.format(file1))
+    print('File2: {0}'.format(file2))
     if file1.split('_R1') == file2.split('_R2'):
-        logging.info('In process...')
+        print('In process...')
 
         # set current directory to SKESA work directory
         os.chdir(out_dir)
@@ -29,7 +28,7 @@ def launch(sample, file1, file2, out_dir):
         for n in log.split("\n"):
             if "SKESA" in n:
                 version_skesa = n.split(" ")[1]
-        logging.info(f"\nVersion SKESA :{version_skesa}\n")
+        print(f"\nVersion SKESA :{version_skesa}\n")
 
         # Get version of Shovill
         cmd = 'shovill --version'
@@ -40,10 +39,10 @@ def launch(sample, file1, file2, out_dir):
         for n in log.split("\n"):
             if "shovill" in n:
                 version_shovill = n.split(" ")[1]
-        logging.info(f"\nVersion Shovill-SKESA :{version_shovill}\n")
+        print(f"\nVersion Shovill-SKESA :{version_shovill}\n")
 
         cmd = 'shovill --assembler skesa --R1 {0} --R2 {1} --outdir {2} --ram 20 --force'.format(file1, file2, out_dir)
-        logging.info(cmd)
+        print(cmd)
 
         # launch SKESA
         process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout.read()
@@ -57,9 +56,9 @@ def launch(sample, file1, file2, out_dir):
         os.remove(os.path.join(out_dir, "skesa.fasta"))
 
         if os.path.exists(os.path.join(out_dir, "contigs.fa")):
-            logging.info(f'Assembly of {sample} done!')
+            print(f'Assembly of {sample} done!')
         else:
-            logging.info(f'Assembly of {sample} not done! Check error file log : {filename_log}')
+            print(f'Assembly of {sample} not done! Check error file log : {filename_log}')
 
 
 def pre_main(arguments):
@@ -71,9 +70,9 @@ def pre_main(arguments):
 
 
 def main(file1, file2, sample, out_dir):
-    logging.info(f'\nSample: {sample}')
-    logging.info(f'Input file names: {file1} {file2}')
-    logging.info(f'Output dir: {out_dir}\n')
+    print(f'\nSample: {sample}')
+    print(f'Input file names: {file1} {file2}')
+    print(f'Output dir: {out_dir}\n')
     launch(sample, file1, file2, out_dir)
 
 

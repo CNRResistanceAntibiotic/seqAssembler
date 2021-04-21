@@ -2,7 +2,6 @@
 # Write by Richard Bonnet
 # Date: 19/01/2016
 import argparse
-import logging
 import os
 import subprocess
 import sys
@@ -59,8 +58,8 @@ def check_trimming(job_dir):
                 trimming_output_file_found = True
                 break
         if trimming_output_file_found:
-            logging.info('\nTrimming output file:', trimming_output_list)
-            logging.info('Trimming already done!\n')
+            print('\nTrimming output file:', trimming_output_list)
+            print('Trimming already done!\n')
             break
     return trimming_output_file_found
 
@@ -79,7 +78,7 @@ def launch_trimming(job_dir, fq_list, subset, trimmer_type):
     else:
         sk = True
 
-    logging.info(f'\nTrimming launcher:\nin_f {fq_list[0]} in_r {fq_list[1]} output_dir {trimmer_dir} subset_size {subset}'
+    print(f'\nTrimming launcher:\nin_f {fq_list[0]} in_r {fq_list[1]} output_dir {trimmer_dir} subset_size {subset}'
           f' trimmomatic {tr} sickle {sk}\n')
     trimmer.main(in_f=fq_list[0], in_r=fq_list[1], output_dir=trimmer_dir, subset_size=subset, trimmomatic=tr,
                  sickle=sk, sickle_g=True)
@@ -90,50 +89,50 @@ def launch_a5(sample, job_dir, fq_list, force):
     # LAUNCH A5
     ass_dir = os.path.join(job_dir, 'a5')
     if not os.path.exists(ass_dir) or force:
-        logging.info('\nA5 launcher:')
+        print('\nA5 launcher:')
         call_a5.main(fq_list[0], fq_list[1], sample, ass_dir)
     else:
-        logging.info('\nAssembly a5 already done!\n')
+        print('\nAssembly a5 already done!\n')
 
 
 def launch_skesa(sample, job_dir, fq_list, force):
     # LAUNCH SKESA
     ass_dir = os.path.join(job_dir, 'SKESA')
     if not os.path.exists(ass_dir) or force:
-        logging.info('\nSKESA launcher:')
+        print('\nSKESA launcher:')
         call_skesa.main(fq_list[0], fq_list[1], sample, ass_dir)
     else:
-        logging.info('\nAssembly SKESA already done!\n')
+        print('\nAssembly SKESA already done!\n')
 
 
 def launch_shovill_skesa(sample, job_dir, fq_list, force):
     # LAUNCH shovill SKESA
     ass_dir = os.path.join(job_dir, 'shovill-SKESA')
     if not os.path.exists(ass_dir) or force:
-        logging.info('\nShovill-SKESA launcher:')
+        print('\nShovill-SKESA launcher:')
         call_shovill_skesa.main(fq_list[0], fq_list[1], sample, ass_dir)
     else:
-        logging.info('\nAssembly Shovill-SKESA already done!\n')
+        print('\nAssembly Shovill-SKESA already done!\n')
 
 
 def launch_shovill_spades(sample, job_dir, fq_list, force):
     # LAUNCH shovill spades
     ass_dir = os.path.join(job_dir, 'shovill-spades')
     if not os.path.exists(ass_dir) or force:
-        logging.info('\nShovill-spades launcher:')
+        print('\nShovill-spades launcher:')
         call_shovill_spades.main(fq_list[0], fq_list[1], sample, ass_dir)
     else:
-        logging.info('\nAssembly Shovill-spades already done!\n')
+        print('\nAssembly Shovill-spades already done!\n')
 
 
 def launch_shovill_velvet(sample, job_dir, fq_list, force):
     # LAUNCH shovill velvet
     ass_dir = os.path.join(job_dir, 'shovill-velvet')
     if not os.path.exists(ass_dir) or force:
-        logging.info('\nShovill-velvet launcher:')
+        print('\nShovill-velvet launcher:')
         call_shovill_velvet.main(fq_list[0], fq_list[1], sample, ass_dir)
     else:
-        logging.info('\nAssembly Shovill-velvet already done!\n')
+        print('\nAssembly Shovill-velvet already done!\n')
 
 
 def launch_shovill_megahit(sample, job_dir, fq_list, force):
@@ -141,10 +140,10 @@ def launch_shovill_megahit(sample, job_dir, fq_list, force):
     # LAUNCH shovill megahit
     ass_dir = os.path.join(job_dir, 'shovill-megahit')
     if not os.path.exists(ass_dir) or force:
-        logging.info('\nShovill-megahit launcher:')
+        print('\nShovill-megahit launcher:')
         call_shovill_megahit.main(fq_list[0], fq_list[1], sample, ass_dir)
     else:
-        logging.info('\nAssembly Shovill-megahit already done!\n')
+        print('\nAssembly Shovill-megahit already done!\n')
 
 
 def launch_spades(assembler, sample, job_dir, fastq_dir, force, trimmer_dir):
@@ -157,8 +156,8 @@ def launch_spades(assembler, sample, job_dir, fastq_dir, force, trimmer_dir):
             file_list = file_list + [os.path.join(dir_path, filename) for filename in file_names if
                                      filename.endswith(ext)]
     file_list.sort()
-    logging.info('\nListing of assembly files:')
-    logging.info(file_list)
+    print('\nListing of assembly files:')
+    print(file_list)
 
     # SORT FASTQ AND FASTQ.GZ IN TRIM_DIR
     sk_pe_list = []
@@ -193,14 +192,14 @@ def launch_spades(assembler, sample, job_dir, fastq_dir, force, trimmer_dir):
         long_reads = ''
 
     # LAUNCH SPADES ASSEMBLER
-    logging.info('\nSPAdes launcher:', end=' ')
+    print('\nSPAdes launcher:', end=' ')
     #
     plasmid = False
     if assembler == 'plasmidspades':
         plasmid = True
-        logging.info('Plasmid assembly with', end=' ')
+        print('Plasmid assembly with', end=' ')
     else:
-        logging.info('Genomic assembly with', end=' ')
+        print('Genomic assembly with', end=' ')
 
     if not os.path.exists(os.path.join(job_dir, assembler)) or force:
         s_files = tr_contig = ""
@@ -212,8 +211,8 @@ def launch_spades(assembler, sample, job_dir, fastq_dir, force, trimmer_dir):
             if sk_up_list:
                 s_files = ','.join(sk_up_list)
 
-            logging.info(f'PE sickle files\n{sk_pe_list[0]} {sk_pe_list[1]}')
-            logging.info('SPAdes in process...')
+            print(f'PE sickle files\n{sk_pe_list[0]} {sk_pe_list[1]}')
+            print('SPAdes in process...')
             call_spades.main(pe_file1=sk_pe_list[0], pe_file2=sk_pe_list[1], out_dir=job_dir, plasmid=plasmid,
                              s_files=s_files, tr_contig=tr_contig)
 
@@ -222,26 +221,26 @@ def launch_spades(assembler, sample, job_dir, fastq_dir, force, trimmer_dir):
             if tr_up_list:
                 s_files = ','.join(tr_up_list)
 
-            logging.info(f'PE Trimmomatic files\n{tr_pe_list[0]} {tr_pe_list[1]}')
-            logging.info('SPAdes in process...')
+            print(f'PE Trimmomatic files\n{tr_pe_list[0]} {tr_pe_list[1]}')
+            print('SPAdes in process...')
 
             call_spades.main(pe_file1=tr_pe_list[0], pe_file2=tr_pe_list[1], out_dir=job_dir, plasmid=plasmid,
                              s_files=s_files, tr_contig=tr_contig)
 
         elif sk_se_list:
             s_files = sk_se_list[0]
-            logging.info(f'SE sickle files\n{sk_se_list[0]}')
-            logging.info('SPAdes in process...')
+            print(f'SE sickle files\n{sk_se_list[0]}')
+            print('SPAdes in process...')
             call_spades.main(out_dir=job_dir, plasmid=plasmid,
                              s_files=s_files, tr_contig=tr_contig)
 
         elif tr_se_list:
-            logging.info(f'SE Trimmomatic files\n{tr_se_list}')
-            logging.info('SPAdes in process...')
+            print(f'SE Trimmomatic files\n{tr_se_list}')
+            print('SPAdes in process...')
             call_spades.main(out_dir=job_dir, plasmid=plasmid,
                              s_files=tr_se_list, tr_contig=tr_contig)
     else:
-        logging.error(f'\nAssembly {assembler} already done!\n')
+        print(f'\nAssembly {assembler} already done!\n')
 
 
 def select_assembly(job_dir, sample, min_size, input_assembler_list):
@@ -252,62 +251,62 @@ def select_assembly(job_dir, sample, min_size, input_assembler_list):
         if assembler == 'spades':
             source_file = os.path.join(job_dir, 'spades', 'scaffolds.fasta')
             if os.path.exists(source_file):
-                logging.info(f"The assembly file of {assembler} exist.")
+                print(f"The assembly file of {assembler} exist.")
             else:
-                logging.info(f"The assembly file of {assembler} not exist. This assembler is not keep for further steps.")
+                print(f"The assembly file of {assembler} not exist. This assembler is not keep for further steps.")
                 continue
 
         elif assembler == 'a5':
             source_file = os.path.join(job_dir, 'a5', sample + '.final.scaffolds.fasta')
 
             if os.path.exists(source_file):
-                logging.info(f"The assembly file of {assembler} exist.")
+                print(f"The assembly file of {assembler} exist.")
             else:
-                logging.info(f"The assembly file of {assembler} not exist. This assembler is not keep for further steps.")
+                print(f"The assembly file of {assembler} not exist. This assembler is not keep for further steps.")
                 continue
 
         elif assembler == 'SKESA':
             source_file = os.path.join(job_dir, 'SKESA', sample + '.skesa.fa')
             if os.path.exists(source_file):
-                logging.info(f"The assembly file of {assembler} exist.")
+                print(f"The assembly file of {assembler} exist.")
             else:
-                logging.info(f"The assembly file of {assembler} not exist. This assembler is not keep for further steps.")
+                print(f"The assembly file of {assembler} not exist. This assembler is not keep for further steps.")
                 continue
 
         elif assembler == 'shovill-SKESA':
             source_file = os.path.join(job_dir, 'shovill-SKESA', 'contigs.fa')
             if os.path.exists(source_file):
-                logging.info(f"The assembly file of {assembler} exist.")
+                print(f"The assembly file of {assembler} exist.")
             else:
-                logging.info(f"The assembly file of {assembler} not exist. This assembler is not keep for further steps.")
+                print(f"The assembly file of {assembler} not exist. This assembler is not keep for further steps.")
                 continue
 
         elif assembler == 'shovill-spades':
             source_file = os.path.join(job_dir, 'shovill-spades', 'contigs.fa')
             if os.path.exists(source_file):
-                logging.info(f"The assembly file of {assembler} exist.")
+                print(f"The assembly file of {assembler} exist.")
             else:
-                logging.info(f"The assembly file of {assembler} not exist. This assembler is not keep for further steps.")
+                print(f"The assembly file of {assembler} not exist. This assembler is not keep for further steps.")
                 continue
 
         elif assembler == 'shovill-megahit':
             source_file = os.path.join(job_dir, 'shovill-megahit', 'contigs.fa')
             if os.path.exists(source_file):
-                logging.info(f"The assembly file of {assembler} exist.")
+                print(f"The assembly file of {assembler} exist.")
             else:
-                logging.info(f"The assembly file of {assembler} not exist. This assembler is not keep for further steps.")
+                print(f"The assembly file of {assembler} not exist. This assembler is not keep for further steps.")
                 continue
 
         elif assembler == 'shovill-velvet':
             source_file = os.path.join(job_dir, 'shovill-velvet', 'contigs.fa')
             if os.path.exists(source_file):
-                logging.info(f"The assembly file of {assembler} exist.")
+                print(f"The assembly file of {assembler} exist.")
             else:
-                logging.info(f"The assembly file of {assembler} not exist. This assembler is not keep for further steps.")
+                print(f"The assembly file of {assembler} not exist. This assembler is not keep for further steps.")
                 continue
 
-        logging.info(f'\n\n## Assembly with {assembler} done!  ##')
-        logging.info("Order Fasta assembled by Sequence length")
+        print(f'\n\n## Assembly with {assembler} done!  ##')
+        print("Order Fasta assembled by Sequence length")
 
         with open(source_file, "r") as handle:
             records = list(SeqIO.parse(handle, "fasta"))
@@ -318,15 +317,15 @@ def select_assembly(job_dir, sample, min_size, input_assembler_list):
 
         os.remove(source_file)
         move(source_file_corr, source_file)
-        logging.info("End order fasta by length")
-        logging.info(f"Open {source_file} fasta file for check")
-        logging.info('Quality check:')
+        print("End order fasta by length")
+        print(f"Open {source_file} fasta file for check")
+        print('Quality check:')
         s_quality_dic = assess_quality(source_file)
-        logging.info(f'Genome size: {s_quality_dic["assembly_len"]}')
-        logging.info(f'N number: {s_quality_dic["N_number"]}')
-        logging.info(f'Percentage of N(s): {round((100 * s_quality_dic["N_number"]) / float(s_quality_dic["assembly_len"]))}')
-        logging.info(f'Number of scaffold (length >= 500 pb): {s_quality_dic["contig_number"]}')
-        logging.info(f'N50: {s_quality_dic["N50"]}')
+        print(f'Genome size: {s_quality_dic["assembly_len"]}')
+        print(f'N number: {s_quality_dic["N_number"]}')
+        print(f'Percentage of N(s): {round((100 * s_quality_dic["N_number"]) / float(s_quality_dic["assembly_len"]))}')
+        print(f'Number of scaffold (length >= 500 pb): {s_quality_dic["contig_number"]}')
+        print(f'N50: {s_quality_dic["N50"]}')
 
         copy = True
 
@@ -342,24 +341,24 @@ def select_assembly(job_dir, sample, min_size, input_assembler_list):
             # check N50
             if s_n50 < d_n50:
                 copy = False
-                logging.info(f"The assembly with {assembler} have a lower N50 than the previous assembly done")
+                print(f"The assembly with {assembler} have a lower N50 than the previous assembly done")
             elif s_n50 == d_n50:
                 if s_N < d_n:
                     copy = False
             else:
                 # N50 is good
                 copy = True
-                logging.info(f"The assembly with {assembler} have a better N50 than the previous assembly done."
+                print(f"The assembly with {assembler} have a better N50 than the previous assembly done."
                              f" It will be copy.")
                 pass
 
         # if the newest assembly produce can be copy
         if copy:
-            logging.info(f'\nThe assembly going to be written in {destination_file}')
+            print(f'\nThe assembly going to be written in {destination_file}')
             copy2(source_file, destination_file)
-            logging.info(f'The assembly is written in {destination_file}')
+            print(f'The assembly is written in {destination_file}')
             rec_list = []
-            logging.info('\nThe assembly contigs are going to be rename in "ctg_/d+" format')
+            print('\nThe assembly contigs are going to be rename in "ctg_/d+" format')
             # get id_contig of sorted by length the contigs
             with open(destination_file, 'r') as f:
                 len_and_ids = sorted(((len(seq), title.split(None, 1)[0]) for
@@ -378,19 +377,19 @@ def select_assembly(job_dir, sample, min_size, input_assembler_list):
                         n += 1
                         rec_list.append(rec)
                     else:
-                        logging.info(f"Contig \"{id_contig}\" has been removed on the final assembly (contig length less"
+                        print(f"Contig \"{id_contig}\" has been removed on the final assembly (contig length less"
                                      f" than {min_size}bp (contig length = {len(rec.seq)}bp))")
             SeqIO.write(rec_list, open(destination_file, 'w'), 'fasta')
             final_assembler = assembler
-            logging.info('The assembly contigs have been renamed !')
+            print('The assembly contigs have been renamed !')
         else:
-            logging.info(f"The assembly with {assembler} was not selected as the best one by the N50 values")
+            print(f"The assembly with {assembler} was not selected as the best one by the N50 values")
     if not final_assembler:
-        logging.error(f"\nNo assembly has been selected !!! The program exit.\n")
+        print(f"\nNo assembly has been selected !!! The program exit.\n")
         exit()
     else:
-        logging.info(f"\nThe best assembly was done by {final_assembler}\n")
-    logging.info('##  END  ##\n')
+        print(f"\nThe best assembly was done by {final_assembler}\n")
+    print('##  END  ##\n')
     return destination_file
 
 
@@ -414,34 +413,34 @@ def assess_quality(filename):
 
 
 def launch_fasta2bam(fasta_file, fq_list):
-    logging.info('\n#Run the alignment of reads with assembly')
+    print('\n#Run the alignment of reads with assembly')
     fasta2bam.main(fasta_file, fq_list[0], fq_list[1], 8, True)
-    logging.info('\n#End bam file generated, sorted and indexed')
+    print('\n#End bam file generated, sorted and indexed')
     return os.path.splitext(fasta_file)[0] + '.bam'
 
 
 def launch_bam2stats(fasta_file, bam_file, mbam_depth, mbam_size, mbam_basq, mbam_mapq):
-    logging.info('\n#Run bam-based filter')
+    print('\n#Run bam-based filter')
     bam2stats.main(fas_file=fasta_file, bam_file=bam_file, m_depth=mbam_depth, m_size=mbam_size, m_basq=mbam_basq,
                    m_mapq=mbam_mapq, filter_bam=True, plt_report=True)
     # copy fasta file
     copy2(os.path.join(os.path.dirname(fasta_file), 'bam_stats', 'assembly_filtered.fas'), fasta_file)
-    logging.info('\n#End bam file generated, sorted and indexed')
+    print('\n#End bam file generated, sorted and indexed')
 
 
 def launch_plasflow(destination_file, outfile_prep, outfile_plasflow, threshold):
-    logging.info('\n\n#Preparation of PlasFlow sequence')
+    print('\n\n#Preparation of PlasFlow sequence')
     cmd = f'perl /usr/local/PlasFlow/filter_sequences_by_length.pl -input {destination_file} -output {outfile_prep}' \
           f' -thresh {threshold}'
     out_str = subprocess.check_output(cmd, shell=True)
-    logging.info(out_str)
-    logging.info('\n#End of the preparation of PlasFlow sequence')
+    print(out_str)
+    print('\n#End of the preparation of PlasFlow sequence')
     #########################
-    logging.info('\n#Run of PlasFlow')
+    print('\n#Run of PlasFlow')
     cmd = f'python3 /usr/local/PlasFlow/PlasFlow.py --input {outfile_prep} --output {outfile_plasflow}'
     out_str = subprocess.check_output(cmd, shell=True)
-    logging.info(out_str)
-    logging.info('\n#End of PlasFlow')
+    print(out_str)
+    print('\n#End of PlasFlow')
     return outfile_plasflow
 
 
@@ -453,7 +452,7 @@ def main(args):
     # SETUP FASTQ/FASTGZ DIRECTORY
     fq_dir = args.fqDir
     if not os.path.exists(fq_dir):
-        logging.error(f'\nFastq/Fastq.gz directory was not found: {fq_dir}\n')
+        print(f'\nFastq/Fastq.gz directory was not found: {fq_dir}\n')
         exit(1)
 
     # SETUP THE OUTPUT DIRECTORY
@@ -468,7 +467,7 @@ def main(args):
     if sample_file == '':
         sample_file = os.path.join(out_dir, 'sample.csv')
     if not os.path.exists(sample_file):
-        logging.error(f'\nSample file directory was not found: {sample_file}\n')
+        print(f'\nSample file directory was not found: {sample_file}\n')
         exit(1)
     sample_list = setup_samples(sample_file)
 
@@ -483,17 +482,17 @@ def main(args):
         job_dir = os.path.abspath(os.path.join(out_dir, sample))
         if not os.path.exists(job_dir):
             os.makedirs(os.path.abspath(job_dir))
-        logging.info(f'\nStart with {sample} in {job_dir}')
+        print(f'\nStart with {sample} in {job_dir}')
         # fastq or fastq.gz files
         fq_list = fq_files(sample, fq_dir)
-        logging.info(f'\nThe fastq files treated are (in PE) : {fq_list[0]} and {fq_list[1]}')
+        print(f'\nThe fastq files treated are (in PE) : {fq_list[0]} and {fq_list[1]}')
         # SETUP ASSEMBLER
-        logging.info('\nLaunch assembly\n')
+        print('\nLaunch assembly\n')
         input_assembler_list = args.assembler.split(',')
         destination_file = ""
         for assembler in input_assembler_list:
             if assembler not in assembler_list:
-                logging.error(f'\nInvalid assembler name: {assembler}\n')
+                print(f'\nInvalid assembler name: {assembler}\n')
                 exit(1)
             elif assembler == 'a5':
                 launch_a5(sample, job_dir, fq_list, args.force)
@@ -504,7 +503,7 @@ def main(args):
                     if trimmer in trimmer_list:
                         trimmer_dir = launch_trimming(job_dir, fq_list, subset_size, trimmer)
                     else:
-                        logging.error(f'\nTrimmer {trimmer} not found\n')
+                        print(f'\nTrimmer {trimmer} not found\n')
                         exit(1)
                 launch_spades(assembler, sample, job_dir, fq_dir, args.force, trimmer_dir)
             elif assembler == 'SKESA':
