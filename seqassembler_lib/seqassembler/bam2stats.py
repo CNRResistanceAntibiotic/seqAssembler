@@ -224,6 +224,7 @@ def filter_contigs(result_file, contigs, m_size, m_basq, m_mapq, m_depth, rename
             n += 1
             if rename:
                 ctg.id = f'ctg_{n}'
+                ctg.description = ''
             records.append(ctg)
     logging.info(f'\n{len(del_IDs)} deleted contigs')
     logging.info(f'{len(records)} remaining contigs\n')

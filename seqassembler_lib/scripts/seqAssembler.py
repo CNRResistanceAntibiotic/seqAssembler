@@ -348,8 +348,8 @@ def select_assembly(job_dir, sample, min_size, input_assembler_list):
             else:
                 # N50 is good
                 copy = True
-                print(f"The assembly with {assembler} have a better N50 than the previous assembly done."
-                             f" It will be copy.")
+                print(f"The assembly with {assembler} have a better N50 than the previous assembly done. "
+                      f"It will be copy.")
                 pass
 
         # if the newest assembly produce can be copy
@@ -378,7 +378,7 @@ def select_assembly(job_dir, sample, min_size, input_assembler_list):
                         rec_list.append(rec)
                     else:
                         print(f"Contig \"{id_contig}\" has been removed on the final assembly (contig length less"
-                                     f" than {min_size}bp (contig length = {len(rec.seq)}bp))")
+                              f" than {min_size}bp (contig length = {len(rec.seq)}bp))")
             SeqIO.write(rec_list, open(destination_file, 'w'), 'fasta')
             final_assembler = assembler
             print('The assembly contigs have been renamed !')
