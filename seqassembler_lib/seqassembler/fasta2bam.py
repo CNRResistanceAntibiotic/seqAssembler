@@ -20,12 +20,12 @@ def alignment_bwa(fasta_file, fastq_file1, fastq_file2, threads=8, force=False):
 
     if not os.path.exists(bam_file) or force:
         # index reference
-        cmd = "bwa index {0}".format(index_fasta_file)
+        cmd = f"bwa index {index_fasta_file}"
         process = Popen(cmd, shell=True, stdout=PIPE, stderr=STDOUT).stdout.read()
 
         # make log
         filename_log = "logBWA_index.txt"
-        header = "Command line executed: {0}\n\n\n{1}".format(cmd, process.decode("utf-8"))
+        header = f"Command line executed: {cmd}\n\n\n{process.decode('utf-8')}"
         log_process_output(header, bwa_index_dir, filename_log)
 
         # remove fasta used for index
@@ -58,9 +58,9 @@ def convert_sam_to_bam(sam_file, force=False):
 
 def sort_bam_file(bam_file):
     out_file = os.path.splitext(bam_file)[0] + '_sort.bam'
-    cmd = "samtools sort -m 1000000000 {0} > {1};mv {2} {3}".format(bam_file, out_file, out_file, bam_file)
+    cmd = f"samtools sort -m 1000000000 {bam_file} -T {os.path.dirname(bam_file)} > {out_file};mv {out_file} {bam_file}"
     os.system(cmd)
-    cmd = "samtools flagstat {0} > {1}".format(bam_file, os.path.splitext(bam_file)[0] + '_bamstat.txt')
+    cmd = f"samtools flagstat {bam_file} > {os.path.splitext(bam_file)[0] + '_bamstat.txt'}"
     os.system(cmd)
     return bam_file
 
