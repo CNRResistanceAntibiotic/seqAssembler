@@ -5,7 +5,7 @@ import subprocess
 from shutil import rmtree
 
 
-def launch(plasmid, cv, pe_file1, pe_file2, s_files, pacbio, sanger, trcontig, uncontig, out_dir):
+def launch(plasmid, cv, pe_file1, pe_file2, s_files, pacbio, sanger, trcontig, uncontig, out_dir, temp_dir):
     # Get version Spades
     cmd = 'spades.py -v'
     # launch spades for version
@@ -42,7 +42,7 @@ def launch(plasmid, cv, pe_file1, pe_file2, s_files, pacbio, sanger, trcontig, u
         cmd = cmd + f' --untrusted-contigs {uncontig}'
     if cv != 'off':
         cmd = cmd + f' --cov-cutoff {cv}'
-    cmd = cmd + f' -o {ass_dir}'
+    cmd = cmd + f' -o {ass_dir} --tmp-dir {temp_dir}'
     print(f'\nSpades:\n{cmd}\n')
     print('Spades in process...')
     subprocess.check_output(cmd, shell=True)
@@ -67,18 +67,18 @@ def pre_main(arguments):
     out_dir = arguments.outdir
     plasmid = arguments.plasmid
     cv = arguments.cv
-    main(pe_file1, pe_file2, s_files, pacbio, sanger, tr_contig, un_contig, out_dir, plasmid, cv)
+    main(pe_file1, pe_file2, s_files, pacbio, sanger, tr_contig, un_contig, out_dir, plasmid, cv, temp_dir)
 
 
 def main(pe_file1="", pe_file2="", s_files="", pacbio="", sanger="", tr_contig="", un_contig="", out_dir="",
-         plasmid=False, cv="off"):
+         plasmid=False, cv="off", temp_dir=""):
 
     s_files = s_files.split(',')
 
     print(f'\nOutput dir: {out_dir}')
     print(f'Input file names: {pe_file1} {pe_file2} {" ".join(s_files)} {pacbio} {sanger} {tr_contig} {un_contig}')
     # backup_assembly(out_dir, sample)
-    launch(plasmid, cv, pe_file1, pe_file2, s_files, pacbio, sanger, tr_contig, un_contig, out_dir)
+    launch(plasmid, cv, pe_file1, pe_file2, s_files, pacbio, sanger, tr_contig, un_contig, out_dir, temp_dir)
 
 
 def version():

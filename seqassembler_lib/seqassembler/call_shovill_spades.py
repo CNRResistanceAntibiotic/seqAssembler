@@ -62,11 +62,11 @@ def pre_main(arguments):
     main("toto", pe_file1, pe_file2, out_dir)
 
 
-def main(file1, file2, sample, out_dir):
+def main(file1, file2, sample, out_dir, temp_dir):
     print(f'\nSample: {sample}')
     print(f'Input file names: {file1} {file2}')
     print(f'Output dir: {out_dir}\n')
-    launch(sample, file1, file2, out_dir)
+    launch(sample, file1, file2, out_dir, temp_dir)
 
 
 def version():

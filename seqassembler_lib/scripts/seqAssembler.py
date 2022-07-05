@@ -144,7 +144,7 @@ def launch_shovill_megahit(sample, job_dir, fq_list, force, temp_dir):
         print('\nAssembly Shovill-megahit already done!\n')
 
 
-def launch_spades(assembler, sample, job_dir, fastq_dir, force, trimmer_dir):
+def launch_spades(assembler, sample, job_dir, fastq_dir, force, trimmer_dir, temp_dir):
 
     fastq_dir = os.path.abspath(fastq_dir)
     # SEARCH FASTQ AND FASTQ.GZ IN TRIM_DIR
@@ -207,7 +207,7 @@ def launch_spades(assembler, sample, job_dir, fastq_dir, force, trimmer_dir):
             print(f'PE sickle files\n{sk_pe_list[0]} {sk_pe_list[1]}')
             print('SPAdes in process...')
             call_spades.main(pe_file1=sk_pe_list[0], pe_file2=sk_pe_list[1], out_dir=job_dir, plasmid=plasmid,
-                             s_files=s_files, tr_contig=tr_contig)
+                             s_files=s_files, tr_contig=tr_contig, temp_dir=temp_dir)
 
         elif tr_pe_list:
             tr_pe_list.sort()
@@ -218,20 +218,19 @@ def launch_spades(assembler, sample, job_dir, fastq_dir, force, trimmer_dir):
             print('SPAdes in process...')
 
             call_spades.main(pe_file1=tr_pe_list[0], pe_file2=tr_pe_list[1], out_dir=job_dir, plasmid=plasmid,
-                             s_files=s_files, tr_contig=tr_contig)
+                             s_files=s_files, tr_contig=tr_contig, temp_dir=temp_dir)
 
         elif sk_se_list:
             s_files = sk_se_list[0]
             print(f'SE sickle files\n{sk_se_list[0]}')
             print('SPAdes in process...')
-            call_spades.main(out_dir=job_dir, plasmid=plasmid,
-                             s_files=s_files, tr_contig=tr_contig)
+            call_spades.main(out_dir=job_dir, plasmid=plasmid, s_files=s_files, tr_contig=tr_contig, temp_dir=temp_dir)
 
         elif tr_se_list:
             print(f'SE Trimmomatic files\n{tr_se_list}')
             print('SPAdes in process...')
-            call_spades.main(out_dir=job_dir, plasmid=plasmid,
-                             s_files=tr_se_list, tr_contig=tr_contig)
+            call_spades.main(out_dir=job_dir, plasmid=plasmid, s_files=tr_se_list, tr_contig=tr_contig,
+                             temp_dir=temp_dir)
     else:
         print(f'\nAssembly {assembler} already done!\n')
 
@@ -456,8 +455,11 @@ def main(args):
         os.makedirs(out_dir)
 
     temp_dir = args.tempDir
-    if not os.path.exists(temp_dir):
-        os.makedirs(temp_dir)
+    if temp_dir:
+        if not os.path.exists(temp_dir):
+            os.makedirs(temp_dir)
+    else:
+        temp_dir = "/tmp"
 
     # SETUP THE PREFIX AND SPECIES OF INPUT FILES AS A LIST FROM SAMPLE INPUT FILE
     sample_file = args.sampleFile
@@ -502,7 +504,7 @@ def main(args):
                     else:
                         print(f'\nTrimmer {trimmer} not found\n')
                         exit(1)
-                launch_spades(assembler, sample, job_dir, fq_dir, args.force, trimmer_dir)
+                launch_spades(assembler, sample, job_dir, fq_dir, args.force, trimmer_dir, temp_dir)
             elif assembler == 'SKESA':
                 launch_skesa(sample, job_dir, fq_list, args.force)
             elif assembler == 'shovill-spades':
