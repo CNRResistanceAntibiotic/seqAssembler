@@ -6,13 +6,13 @@ import argparse
 from seqassembler_lib.seqassembler.fasta2bam import log_process_output
 
 
-def launch(sample, file1, file2, out_dir):
+def launch(sample, file1, file2, out_dir, temp_dir):
     print(f'\nAssembly of {sample} in {out_dir} with {file1} and {file2}')
     out_dir = os.path.abspath(out_dir)
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
-    print('File1: {0}'.format(file1))
-    print('File2: {0}'.format(file2))
+    print(f'File1: {file1}')
+    print(f'File2: {file2}')
     if file1.split('_R1') == file2.split('_R2'):
         print('In process...')
 
@@ -41,7 +41,8 @@ def launch(sample, file1, file2, out_dir):
                 version_shovill = n.split(" ")[1]
         print(f"\nVersion Shovill-SKESA :{version_shovill}\n")
 
-        cmd = 'shovill --assembler skesa --R1 {0} --R2 {1} --outdir {2} --ram 20 --force'.format(file1, file2, out_dir)
+        cmd = f'shovill --assembler skesa --R1 {file1} --R2 {file2} --outdir {out_dir} --ram 20 --force' \
+              f' --tmpdir {temp_dir}'
         print(cmd)
 
         # launch SKESA
@@ -49,7 +50,7 @@ def launch(sample, file1, file2, out_dir):
 
         # make log
         filename_log = "log_shovill_skesa_pipeline.txt"
-        header = "Command line executed: {0}\n\n\n{1}".format(cmd, process.decode("utf-8"))
+        header = f"Command line executed: {cmd}\n\n\n{process.decode('utf-8')}"
         log_process_output(header, out_dir, filename_log)
 
         # remove unwanted file

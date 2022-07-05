@@ -6,7 +6,7 @@ import subprocess
 from seqassembler_lib.seqassembler.fasta2bam import log_process_output
 
 
-def launch(sample, pe_file1, pe_file2, out_dir):
+def launch(sample, pe_file1, pe_file2, out_dir, temp_dir):
     # Get version Spades
     cmd = 'spades.py -v'
     # launch spades for version
@@ -25,7 +25,8 @@ def launch(sample, pe_file1, pe_file2, out_dir):
             version_shovill = n.split(" ")[1]
     print(f"\nVersion Shovill-spades :{version_shovill}\n")
 
-    cmd = f'shovill --assembler spades --R1 {pe_file1} --R2 {pe_file2} --outdir {out_dir} --ram 20 --force'
+    cmd = f'shovill --assembler spades --R1 {pe_file1} --R2 {pe_file2} --outdir {out_dir} --ram 20 --force' \
+          f' --tmpdir {temp_dir}'
 
     print(f'\nShovill Spades:\n{cmd}\n')
     print('Shovill Spades in process...')

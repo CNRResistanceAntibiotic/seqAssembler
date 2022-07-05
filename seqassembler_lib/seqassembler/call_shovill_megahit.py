@@ -6,7 +6,7 @@ import argparse
 from seqassembler_lib.seqassembler.fasta2bam import log_process_output
 
 
-def launch(sample, file1, file2, out_dir):
+def launch(sample, file1, file2, out_dir, temp_dir):
     print(f'\nAssembly of {sample} in {out_dir} with {file1} and {file2}')
     out_dir = os.path.abspath(out_dir)
     if not os.path.exists(out_dir):
@@ -41,7 +41,8 @@ def launch(sample, file1, file2, out_dir):
                 version_shovill = n.split(" ")[1]
         print(f"\nVersion Shovill-megahit :{version_shovill}\n")
 
-        cmd = f'shovill --assembler megahit --R1 {file1} --R2 {file2} --outdir {out_dir} --ram 20 --force'
+        cmd = f'shovill --assembler megahit --R1 {file1} --R2 {file2} --outdir {out_dir} --ram 20 --force ' \
+              f'--tmpdir {temp_dir}'
         print(cmd)
 
         # launch megahit

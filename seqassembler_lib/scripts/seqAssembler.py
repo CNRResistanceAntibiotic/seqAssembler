@@ -15,7 +15,6 @@ from seqassembler_lib.seqassembler import trimmer, call_a5, call_spades, bam2sta
 
 
 def setup_samples(sample_file):
-    # sample_dict = {}
     sample_list = []
     for line in open(sample_file, 'r'):
         try:
@@ -29,7 +28,6 @@ def setup_samples(sample_file):
             print('Required format:')
             print('prefix\tgenre species')
             exit()
-
     return sample_list
 
 
@@ -105,43 +103,43 @@ def launch_skesa(sample, job_dir, fq_list, force):
         print('\nAssembly SKESA already done!\n')
 
 
-def launch_shovill_skesa(sample, job_dir, fq_list, force):
+def launch_shovill_skesa(sample, job_dir, fq_list, force, temp_dir):
     # LAUNCH shovill SKESA
     ass_dir = os.path.join(job_dir, 'shovill-SKESA')
     if not os.path.exists(ass_dir) or force:
         print('\nShovill-SKESA launcher:')
-        call_shovill_skesa.main(fq_list[0], fq_list[1], sample, ass_dir)
+        call_shovill_skesa.main(fq_list[0], fq_list[1], sample, ass_dir, temp_dir)
     else:
         print('\nAssembly Shovill-SKESA already done!\n')
 
 
-def launch_shovill_spades(sample, job_dir, fq_list, force):
+def launch_shovill_spades(sample, job_dir, fq_list, force, temp_dir):
     # LAUNCH shovill spades
     ass_dir = os.path.join(job_dir, 'shovill-spades')
     if not os.path.exists(ass_dir) or force:
         print('\nShovill-spades launcher:')
-        call_shovill_spades.main(fq_list[0], fq_list[1], sample, ass_dir)
+        call_shovill_spades.main(fq_list[0], fq_list[1], sample, ass_dir, temp_dir)
     else:
         print('\nAssembly Shovill-spades already done!\n')
 
 
-def launch_shovill_velvet(sample, job_dir, fq_list, force):
+def launch_shovill_velvet(sample, job_dir, fq_list, force, temp_dir):
     # LAUNCH shovill velvet
     ass_dir = os.path.join(job_dir, 'shovill-velvet')
     if not os.path.exists(ass_dir) or force:
         print('\nShovill-velvet launcher:')
-        call_shovill_velvet.main(fq_list[0], fq_list[1], sample, ass_dir)
+        call_shovill_velvet.main(fq_list[0], fq_list[1], sample, ass_dir, temp_dir)
     else:
         print('\nAssembly Shovill-velvet already done!\n')
 
 
-def launch_shovill_megahit(sample, job_dir, fq_list, force):
+def launch_shovill_megahit(sample, job_dir, fq_list, force, temp_dir):
 
     # LAUNCH shovill megahit
     ass_dir = os.path.join(job_dir, 'shovill-megahit')
     if not os.path.exists(ass_dir) or force:
         print('\nShovill-megahit launcher:')
-        call_shovill_megahit.main(fq_list[0], fq_list[1], sample, ass_dir)
+        call_shovill_megahit.main(fq_list[0], fq_list[1], sample, ass_dir, temp_dir)
     else:
         print('\nAssembly Shovill-megahit already done!\n')
 
@@ -160,12 +158,7 @@ def launch_spades(assembler, sample, job_dir, fastq_dir, force, trimmer_dir):
     print(file_list)
 
     # SORT FASTQ AND FASTQ.GZ IN TRIM_DIR
-    sk_pe_list = []
-    sk_se_list = []
-    sk_up_list = []
-    tr_pe_list = []
-    tr_se_list = []
-    tr_up_list = []
+    sk_pe_list, sk_se_list, sk_up_list, tr_pe_list, tr_se_list, tr_up_list = [], [], [], [], [], []
     for filename in file_list:
         if os.path.basename(filename).startswith('sk_s') and 'pe.fastq' in os.path.basename(filename):
             sk_pe_list.append(filename)
@@ -462,6 +455,10 @@ def main(args):
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
+    temp_dir = args.tempDir
+    if not os.path.exists(temp_dir):
+        os.makedirs(temp_dir)
+
     # SETUP THE PREFIX AND SPECIES OF INPUT FILES AS A LIST FROM SAMPLE INPUT FILE
     sample_file = args.sampleFile
     if sample_file == '':
@@ -509,13 +506,13 @@ def main(args):
             elif assembler == 'SKESA':
                 launch_skesa(sample, job_dir, fq_list, args.force)
             elif assembler == 'shovill-spades':
-                launch_shovill_spades(sample, job_dir, fq_list, args.force)
+                launch_shovill_spades(sample, job_dir, fq_list, args.force, temp_dir)
             elif assembler == 'shovill-SKESA':
-                launch_shovill_skesa(sample, job_dir, fq_list, args.force)
+                launch_shovill_skesa(sample, job_dir, fq_list, args.force, temp_dir)
             elif assembler == 'shovill-velvet':
-                launch_shovill_velvet(sample, job_dir, fq_list, args.force)
+                launch_shovill_velvet(sample, job_dir, fq_list, args.force, temp_dir)
             elif assembler == 'shovill-megahit':
-                launch_shovill_megahit(sample, job_dir, fq_list, args.force)
+                launch_shovill_megahit(sample, job_dir, fq_list, args.force, temp_dir)
         # Make Assembly file with filtering quality
         destination_file = select_assembly(job_dir, sample, int(args.minSize), input_assembler_list)
 
@@ -575,6 +572,8 @@ def run():
                         help="Minimum mapping quality threshold for the scaffolds (default: 30)")
     parser.add_argument('-pf', '--plasFlow', dest="plasFlow", action='store_true', default=False,
                         help="launch the identification of plasmid/chromosome contigs (default: False)")
+    parser.add_argument('-tmp', '--tempDir', dest="tempDir",
+                        help="The tmp directory. (Not set by default)")
     parser.add_argument('-F', '--force', dest="force", action='store_true', default=False,
                         help="Force file overwrite (default: False)")
 

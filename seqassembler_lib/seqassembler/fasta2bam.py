@@ -66,7 +66,7 @@ def sort_bam_file(bam_file):
 
 
 def index_bam_file(bam_file):
-    cmd = "samtools index {0}".format(bam_file)
+    cmd = f"samtools index {bam_file}"
     os.system(cmd)
 
 
@@ -75,11 +75,11 @@ def split_unmapped_mapped_reads(bam_file, force):
     if not os.path.exists(unmapped_fastq_file) or force:
 
         # process BAM of unmapped read
-        cmd = "samtools view -b -f 4 {0} > tmp_unmapped.bam".format(bam_file)
+        cmd = f"samtools view -b -f 4 {bam_file} > tmp_unmapped.bam"
         os.system(cmd)
 
         # process FASTQ of unmapped read
-        cmd = "samtools fastq tmp_unmapped.bam > {0}".format(unmapped_fastq_file)
+        cmd = f"samtools fastq tmp_unmapped.bam > {unmapped_fastq_file}"
         os.system(cmd)
 
         # remove unmapped reads BAM file
@@ -87,21 +87,19 @@ def split_unmapped_mapped_reads(bam_file, force):
 
         # process BAM of mapped reads
         out_file = os.path.splitext(bam_file)[0] + '_droped.bam'
-        cmd = "samtools view -b -F 4 {0} > {1}".format(bam_file, out_file)
+        cmd = f"samtools view -b -F 4 {bam_file} > {out_file}"
         os.system(cmd)
 
         # move BAM file
         shutil.move(out_file, bam_file)
-
     else:
-        print('\nUnmapped reads fastq file {0} already done\n'.format(unmapped_fastq_file))
-
+        print(f'\nUnmapped reads fastq file {unmapped_fastq_file} already done\n')
     return bam_file, unmapped_fastq_file
 
 
 def log_process_output(output, work_dir_path, filename_log):
     try:
-        with open("{0}/{1}".format(work_dir_path, filename_log), 'w') as log_file:
+        with open(f"{work_dir_path}/{filename_log}", 'w') as log_file:
             log_file.write(output)
     except IOError as e:
         return e
@@ -119,11 +117,11 @@ def pre_main(args):
 def main(fasta_file, fastq_file1, fastq_file2, force=False, threads=8):
 
     print("FASTA TO BAM arguments:\n")
-    print("\t - Fasta File = {0}".format(fasta_file))
-    print("\t - Fastq File 1 = {0}".format(fastq_file1))
-    print("\t - Fastq File 2 = {0}".format(fastq_file2))
-    print("\t - Force = {0}".format(force))
-    print("\t - Threads = {0}".format(threads))
+    print(f"\t - Fasta File = {fasta_file}")
+    print(f"\t - Fastq File 1 = {fastq_file1}")
+    print(f"\t - Fastq File 2 = {fastq_file2}")
+    print(f"\t - Force = {force}")
+    print(f"\t - Threads = {threads}")
 
     print("*START Align BWA*")
     sam_file = alignment_bwa(fasta_file, fastq_file1, fastq_file2, threads, force)
