@@ -48,6 +48,7 @@ def convert_sam_to_bam(sam_file, force=False):
     bam_file = os.path.splitext(sam_file)[0] + '.bam'
     if not os.path.exists(bam_file) or force:
         cmd = "samtools view -h -b -S {0} > {1}".format(sam_file, bam_file)
+        print(cmd)
         os.system(cmd)
 
         # remove sam file
@@ -59,27 +60,31 @@ def convert_sam_to_bam(sam_file, force=False):
 def sort_bam_file(bam_file):
     out_file = os.path.splitext(bam_file)[0] + '_sort.bam'
     cmd = f"samtools sort -m 1000000000 {bam_file} -T {os.path.dirname(bam_file)} > {out_file};mv {out_file} {bam_file}"
+    print(cmd)
     os.system(cmd)
     cmd = f"samtools flagstat {bam_file} > {os.path.splitext(bam_file)[0] + '_bamstat.txt'}"
+    print(cmd)
     os.system(cmd)
     return bam_file
 
 
 def index_bam_file(bam_file):
     cmd = f"samtools index {bam_file}"
+    print(cmd)
     os.system(cmd)
 
 
 def split_unmapped_mapped_reads(bam_file, force):
     unmapped_fastq_file = os.path.splitext(bam_file)[0] + '_unmapped.fastq.gz'
     if not os.path.exists(unmapped_fastq_file) or force:
-
         # process BAM of unmapped read
         cmd = f"samtools view -b -f 4 {bam_file} > tmp_unmapped.bam"
+        print(cmd)
         os.system(cmd)
 
         # process FASTQ of unmapped read
         cmd = f"samtools fastq tmp_unmapped.bam > {unmapped_fastq_file}"
+        print(cmd)
         os.system(cmd)
 
         # remove unmapped reads BAM file
@@ -88,6 +93,7 @@ def split_unmapped_mapped_reads(bam_file, force):
         # process BAM of mapped reads
         out_file = os.path.splitext(bam_file)[0] + '_droped.bam'
         cmd = f"samtools view -b -F 4 {bam_file} > {out_file}"
+        print(cmd)
         os.system(cmd)
 
         # move BAM file
