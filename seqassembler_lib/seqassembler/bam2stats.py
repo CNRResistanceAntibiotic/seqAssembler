@@ -9,7 +9,6 @@ from collections import OrderedDict
 import matplotlib.pyplot as plt
 import pandas as pd
 import pysam
-import pysamstats
 from Bio import SeqIO
 
 
@@ -34,13 +33,15 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
         for ctg in contigs:
             logging.info(f'Bam data for {ctg.id} ({len(ctg)}-bp) in process...')
 
+            """
             # Extract depth stats
             data = pysamstats.load_variation(bam, truncate=True, pad=True, max_depth=400, fafile=fas_file,
                                              chrom=ctg.id, start=1, end=len(ctg.seq))
             positions = data.pos
             dt = {'Depth': data.reads_all, 'Match_depth': data.matches, 'Seq': data.ref,
                   'ctg': [ctg.id] * len(positions)}
-
+            
+            
             if ext_report:
                 # Depth contig report as tsv file
                 cv_dic = OrderedDict([('Total_reads_depth', data.reads_all), ('Paired_reads_depth', data.reads_pp),
@@ -109,7 +110,7 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
                         plt.xlabel('Positions', fontsize=12)
                     plt.savefig(out_prefix + '.png')
                     plt.close()
-
+            
             # Extract mapping quality data
             data = pysamstats.load_mapq(bam, truncate=True, pad=True, max_depth=400, fafile=fas_file,
                                         chrom=ctg.id, start=1, end=len(ctg.seq))
@@ -143,7 +144,7 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
                         plt.xlabel('Positions', fontsize=12)
                     plt.savefig(out_prefix + '.png')
                     plt.close()
-
+        """
         logging.info(f'\nWrite the main results in {out_file}:')
         # df.boxplot(by='ctg', column=['Depth', 'Match_depth', 'Basq', 'Match_basq', 'Mapq'])
         # plt.savefig(os.path.splitext(outfile)[0]+'.png')
