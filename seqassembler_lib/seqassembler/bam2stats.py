@@ -45,10 +45,7 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
                 if x[0] == ctg:
                     match_depth = x[1]
 
-            for c in bam_header_SQ:
-                if c['SN']
-
-            dt = {'Depth': bam.count(ctg), 'Match_depth': match_depth, 'ctg': [ctg.id], 'Seq':tailles_contigs[ctg.id]}
+            dt = {'Depth': bam.count(ctg), 'Match_depth': match_depth, 'ctg': [ctg.id], 'Seq': tailles_contigs[ctg.id]}
 
             total_mapq = 0
             count = 0
@@ -64,6 +61,8 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
                 mapq_moyenne = 0
 
             dt['Mapq'] = mapq_moyenne
+
+            print(dt)
 
             df = pd.concat([df, pd.DataFrame.from_dict(dt)])
 
