@@ -25,15 +25,53 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
 
     # Open bam file
     bam = pysam.AlignmentFile(bam_file)
+    bam_header_SQ = bam.header['SQ']
+
+    tailles_contigs = {}
+    for contig in bam_header_SQ:
+        nom_contig = contig['SN']
+        taille_contig = contig['LN']
+        tailles_contigs[nom_contig] = taille_contig
 
     # Extract data for each contigs
     out_file = os.path.join(out_dir, 'assembly_stats.tsv')
     if not os.path.exists(out_file) or force:
         df = pd.DataFrame()
+
+        for ctg in contigs:
+            logging.info(f'Bam data for {ctg.id} ({len(ctg)}-bp) in process...')
+            match_depth = ""
+            for x in bam.get_index_statistics():
+                if x[0] == ctg:
+                    match_depth = x[1]
+
+            for c in bam_header_SQ:
+                if c['SN']
+
+            dt = {'Depth': bam.count(ctg), 'Match_depth': match_depth, 'ctg': [ctg.id], 'Seq':tailles_contigs[ctg.id]}
+
+            total_mapq = 0
+            count = 0
+
+            for read in bam.fetch(ctg):
+                # Ajouter la valeur MAPQ au total et incrémenter le compteur
+                total_mapq += read.mapping_quality
+                count += 1
+
+            if count > 0:
+                mapq_moyenne = total_mapq / count
+            else:
+                mapq_moyenne = 0
+
+            dt['Mapq'] = mapq_moyenne
+
+            df = pd.concat([df, pd.DataFrame.from_dict(dt)])
+
+        """
         for ctg in contigs:
             logging.info(f'Bam data for {ctg.id} ({len(ctg)}-bp) in process...')
 
-            """
+            
             # Extract depth stats
             data = pysamstats.load_variation(bam, truncate=True, pad=True, max_depth=400, fafile=fas_file,
                                              chrom=ctg.id, start=1, end=len(ctg.seq))
@@ -159,11 +197,11 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
                 values = df[df['ctg'] == ctg]
                 data = values.describe(percentiles=[0.10, 0.50, 0.90])
 
-            for i in ['Depth', 'Match_depth', 'Basq', 'Match_basq', 'Mapq']:
+            for i in ['Depth', 'Match_depth', 'Mapq']:
                 N20 = round(100 * values[values[i] >= 20].index.size / float(values.index.size), 2)
                 res_dic[f'Perc_{i}_>=20'] = N20
                 N30 = round(100 * values[values[i] >= 30].index.size / float(values.index.size), 2)
-                res_dic['Perc_{0}_>=30'.format(i)] = N30
+                res_dic[f'Perc_{i}_>=30'] = N30
                 for j in ["mean", "std", "max", "min"]:
                     key = f'{i}_{j}'
                     value = data.loc[j, i].round(2)
