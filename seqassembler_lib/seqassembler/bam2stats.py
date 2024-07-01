@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import pysam
 from Bio import SeqIO
+from statistics import mean
 
 
 def read_fasta_file(fas_file):
@@ -37,33 +38,22 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
     out_file = os.path.join(out_dir, 'assembly_stats.tsv')
     if not os.path.exists(out_file) or force:
         df = pd.DataFrame()
-
         for ctg in contigs:
             logging.info(f'Bam data for {ctg.id} ({len(ctg)}-bp) in process...')
-            match_depth = ""
-            for x in bam.get_index_statistics():
-                if x[0] == ctg:
-                    match_depth = x[1]
-
-            dt = {'Depth': bam.count(ctg), 'Match_depth': match_depth, 'ctg': [ctg.id], 'Seq': tailles_contigs[ctg.id]}
-
+            dt = {'Depth': round(mean(bam.count_coverage(ctg.id)[0]), 2), 'ctg': [ctg.id],
+                  "Size": bam.get_reference_length(ctg.id)}
             total_mapq = 0
             count = 0
-
-            for read in bam.fetch(ctg):
+            for read in bam.fetch(ctg.id):
                 # Ajouter la valeur MAPQ au total et incrémenter le compteur
                 total_mapq += read.mapping_quality
                 count += 1
-
             if count > 0:
                 mapq_moyenne = total_mapq / count
             else:
                 mapq_moyenne = 0
-
-            dt['Mapq'] = mapq_moyenne
-
+            dt['Mapq'] = round(mapq_moyenne, 2)
             print(dt)
-
             df = pd.concat([df, pd.DataFrame.from_dict(dt)])
 
         """
@@ -196,7 +186,7 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
                 values = df[df['ctg'] == ctg]
                 data = values.describe(percentiles=[0.10, 0.50, 0.90])
 
-            for i in ['Depth', 'Match_depth', 'Mapq']:
+            for i in ['Depth', 'Mapq']:
                 N20 = round(100 * values[values[i] >= 20].index.size / float(values.index.size), 2)
                 res_dic[f'Perc_{i}_>=20'] = N20
                 N30 = round(100 * values[values[i] >= 30].index.size / float(values.index.size), 2)
@@ -209,12 +199,6 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
                     key = f'{i}_{j}_percentile'
                     value = data.loc[j, i].round(2)
                     res_dic[key] = value
-            seq = list(values['Seq'])
-            res_dic['Size'] = len(seq)
-            ambiguous = len(seq)
-            for base in ['A', 'T', 'C', 'G']:
-                ambiguous = ambiguous - (seq.count(base) + seq.count(base.lower()))
-            res_dic['Nbr_ambiguous'] = ambiguous
             results.append(res_dic)
         df = pd.DataFrame(results)
         df.to_csv(out_file, sep='\t', index=False)
@@ -246,8 +230,10 @@ def filter_contigs(result_file, contigs, m_size, m_basq, m_mapq, m_depth, rename
             del_IDs.append(ID)
         if float(data['Mapq_mean']) <= m_mapq:
             del_IDs.append(ID)
+        """
         if float(data['Basq_mean']) <= m_basq:
             del_IDs.append(ID)
+        """
         if float(data['Size']) <= m_size:
             del_IDs.append(ID)
 
