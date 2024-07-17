@@ -178,14 +178,16 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
         results = []
         for ctg in [x.id for x in contigs] + ['overall']:
             logging.info(f'{ctg} in process...')
+            print(ctg)
             res_dic = OrderedDict([('ID', ctg)])
             if ctg == 'overall':
                 values = df
+                res_dic['Size'] = values['Size'].sum()
                 data = values.describe(percentiles=[0.10, 0.90])
             else:
                 values = df[df['ctg'] == ctg]
+                res_dic['Size'] = df[df['ctg'] == ctg]["Size"].values[0]
                 data = values.describe(percentiles=[0.10, 0.50, 0.90])
-
             for i in ['Depth', 'Mapq']:
                 N20 = round(100 * values[values[i] >= 20].index.size / float(values.index.size), 2)
                 res_dic[f'Perc_{i}_>=20'] = N20
@@ -200,8 +202,8 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
                     value = data.loc[j, i].round(2)
                     res_dic[key] = value
             results.append(res_dic)
-        df = pd.DataFrame(results)
-        df.to_csv(out_file, sep='\t', index=False)
+        df_result = pd.DataFrame(results)
+        df_result.to_csv(out_file, sep='\t', index=False)
     else:
         logging.info('\nThe main output file already done!\n')
 
