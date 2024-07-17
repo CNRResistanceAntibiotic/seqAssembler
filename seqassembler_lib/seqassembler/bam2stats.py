@@ -11,6 +11,7 @@ import pandas as pd
 import pysam
 from Bio import SeqIO
 from statistics import mean
+import numpy as np
 
 
 def read_fasta_file(fas_file):
@@ -203,6 +204,7 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
                     res_dic[key] = value
             results.append(res_dic)
         df_result = pd.DataFrame(results)
+        df_result.replace(np.nan, 0, inplace=True)
         df_result.to_csv(out_file, sep='\t', index=False)
     else:
         logging.info('\nThe main output file already done!\n')
