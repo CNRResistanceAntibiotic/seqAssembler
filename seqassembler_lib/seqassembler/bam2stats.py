@@ -2,9 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import logging
 import os
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -40,27 +39,46 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
     if not os.path.exists(out_file) or force:
         df = pd.DataFrame()
         for ctg in contigs:
-            logging.info(f'Bam data for {ctg.id} ({len(ctg)}-bp) in process...')
-            dt = {'Depth': round(mean(bam.count_coverage(ctg.id)[0]), 2), 'ctg': [ctg.id],
-                  "Size": bam.get_reference_length(ctg.id)}
-            total_mapq = 0
+            print(f'Bam data for {ctg.id} ({len(ctg)}-bp) in process...')
+            coverage_position_list = []
+            ctg_list = []
+            size_list = []
+            x = 0
+            for base_coverage_list in bam.count_coverage(ctg.id):
+                for i, depth in enumerate(base_coverage_list):
+                    if x != 0:
+                        tmp_depth = coverage_position_list[i]
+                        coverage_position_list[i] = tmp_depth + depth
+                    else:
+                        coverage_position_list.append(depth)
+                        ctg_list.append(ctg.id)
+                        if size_list:
+                            size_list.append(0)
+                        else:
+                            size_list.append(bam.get_reference_length(ctg.id))
+                x += 1
+
+            dt = {'Depth': coverage_position_list, 'ctg': ctg_list, "Size": size_list}
             count = 0
+            mapq_by_position = defaultdict(list)
             for read in bam.fetch(ctg.id):
-                # Ajouter la valeur MAPQ au total et incrémenter le compteur
-                total_mapq += read.mapping_quality
+                if not read.is_unmapped:
+                    start = read.reference_start
+                    end = read.reference_end
+                    # Parcourir chaque position couverte par la lecture
+                    for pos in range(start, end):
+                        mapq_by_position[pos].append(read.mapping_quality)
                 count += 1
-            if count > 0:
-                mapq_moyenne = total_mapq / count
-            else:
-                mapq_moyenne = 0
-            dt['Mapq'] = round(mapq_moyenne, 2)
-            print(dt)
+            mapq_list = []
+            for pos, qmap_l in mapq_by_position.items():
+                mapq_list.append(round(mean(qmap_l), 2))
+            dt['Mapq'] = mapq_list
             df = pd.concat([df, pd.DataFrame.from_dict(dt)])
 
         """
         for ctg in contigs:
-            logging.info(f'Bam data for {ctg.id} ({len(ctg)}-bp) in process...')
-
+            print(f'Bam data for {ctg.id} ({len(ctg)}-bp) in process...')
+    
             
             # Extract depth stats
             data = pysamstats.load_variation(bam, truncate=True, pad=True, max_depth=400, fafile=fas_file,
@@ -82,7 +100,7 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
                 df_1.index.name = 'Positions'
                 out_prefix = os.path.join(out_dir, '{0}_bam_stats'.format(ctg.id))
                 df_1.to_csv(out_prefix + '.tsv', sep='\t', index=True)
-
+    
                 if plt_report:
                     # Depth contig report as png plot
                     subplots = {'reads_depth': {'data': ['Total_reads_depth', 'Paired_reads_depth'],
@@ -106,13 +124,13 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
                         plt.xlabel('Positions', fontsize=12)
                     plt.savefig(out_prefix + '.png')
                     plt.close()
-
+    
             # Extract base quality stats
             data = pysamstats.load_baseq_ext(bam, truncate=True, pad=True, max_depth=400, fafile=fas_file,
                                              chrom=ctg.id, start=1, end=len(ctg.seq))
             dt['Basq'] = data.rms_baseq
             dt['Match_basq'] = data.rms_baseq_matches
-
+    
             if ext_report:
                 # Base quality report as tsv file
                 bqDic = OrderedDict(
@@ -122,7 +140,7 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
                 df_2.index.name = 'Positions'
                 out_prefix = os.path.join(out_dir, f'{ctg.id}_assembly_qual')
                 df_2.to_csv(out_prefix + '.tsv', sep='\t', index=True)
-
+    
                 if plt_report:
                     # Base quality report as png plot
                     plt.figure(figsize=(20, 5))
@@ -144,7 +162,7 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
                                         chrom=ctg.id, start=1, end=len(ctg.seq))
             dt['Mapq'] = data.rms_mapq
             df = pd.concat([df, pd.DataFrame.from_dict(dt)])
-
+    
             if ext_report:
                 # Mapping quality report as tsv file
                 mq_dic = OrderedDict([('RMS_mapq', data.rms_mapq), ('MAX_mapq', data.max_mapq),
@@ -153,7 +171,7 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
                 df_3.index.name = 'Positions'
                 out_prefix = os.path.join(out_dir, f'{ctg.id}_assembly_mapq')
                 df_3.to_csv(out_prefix + '.tsv', sep='\t', index=True)
-
+    
                 if plt_report:
                     # Mapping quality report as png plot
                     plt.figure(figsize=(20, 20))
@@ -173,13 +191,12 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
                     plt.savefig(out_prefix + '.png')
                     plt.close()
         """
-        logging.info(f'\nWrite the main results in {out_file}:')
+        print(f'\nWrite the main results in {out_file}:')
         # df.boxplot(by='ctg', column=['Depth', 'Match_depth', 'Basq', 'Match_basq', 'Mapq'])
         # plt.savefig(os.path.splitext(outfile)[0]+'.png')
         results = []
         for ctg in [x.id for x in contigs] + ['overall']:
-            logging.info(f'{ctg} in process...')
-            print(ctg)
+            print(f'{ctg} in process...')
             res_dic = OrderedDict([('ID', ctg)])
             if ctg == 'overall':
                 values = df
@@ -207,7 +224,7 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
         df_result.replace(np.nan, 0, inplace=True)
         df_result.to_csv(out_file, sep='\t', index=False)
     else:
-        logging.info('\nThe main output file already done!\n')
+        print('\nThe main output file already done!\n')
 
     return out_file, contigs
 
@@ -257,8 +274,8 @@ def filter_contigs(result_file, contigs, m_size, m_basq, m_mapq, m_depth, rename
                 ctg.id = f'ctg_{n}'
                 ctg.description = ''
             records.append(ctg)
-    logging.info(f'\n{len(del_IDs)} deleted contigs')
-    logging.info(f'{len(records)} remaining contigs\n')
+    print(f'\n{len(del_IDs)} deleted contigs')
+    print(f'{len(records)} remaining contigs\n')
 
     # Write the filtered contigs
     out_file = os.path.join(os.path.dirname(result_file), 'assembly_filtered.fas')
