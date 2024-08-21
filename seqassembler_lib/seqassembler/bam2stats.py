@@ -73,6 +73,7 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
             for pos, qmap_l in mapq_by_position.items():
                 mapq_list.append(round(mean(qmap_l), 2))
             dt['Mapq'] = mapq_list
+            print(dt)
             df = pd.concat([df, pd.DataFrame.from_dict(dt)])
 
         """
