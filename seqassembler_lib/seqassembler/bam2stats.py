@@ -70,10 +70,13 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
                         mapq_by_position[pos].append(read.mapping_quality)
                 count += 1
             mapq_list = []
-            for pos, qmap_l in mapq_by_position.items():
-                mapq_list.append(round(mean(qmap_l), 2))
+            for pos in range(0, len(dt["Depth"])):
+                if pos in mapq_by_position:
+                    qmap_l = mapq_by_position[pos]
+                    mapq_list.append(round(mean(qmap_l), 2))
+                else:
+                    mapq_list.append(0)
             dt['Mapq'] = mapq_list
-            print(dt)
             df = pd.concat([df, pd.DataFrame.from_dict(dt)])
 
         """
