@@ -39,7 +39,7 @@ def launch(sample, pe_file1, pe_file2, out_dir, temp_dir):
     header = f"Command line executed: {cmd}\n\n\n{process.decode('utf-8')}"
     log_process_output(header, out_dir, filename_log)
 
-    os.remove(os.path.join(out_dir, 'contigs.gfa'))
+    os.remove(os.path.join(out_dir, 'spades.gfa'))
     os.remove(os.path.join(out_dir, 'spades.fasta'))
 
     if os.path.exists(os.path.join(out_dir, "contigs.fa")):
