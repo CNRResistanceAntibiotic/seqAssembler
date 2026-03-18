@@ -79,122 +79,6 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
             dt['Mapq'] = mapq_list
             df = pd.concat([df, pd.DataFrame.from_dict(dt)])
 
-        """
-        for ctg in contigs:
-            print(f'Bam data for {ctg.id} ({len(ctg)}-bp) in process...')
-    
-            
-            # Extract depth stats
-            data = pysamstats.load_variation(bam, truncate=True, pad=True, max_depth=400, fafile=fas_file,
-                                             chrom=ctg.id, start=1, end=len(ctg.seq))
-            positions = data.pos
-            dt = {'Depth': data.reads_all, 'Match_depth': data.matches, 'Seq': data.ref,
-                  'ctg': [ctg.id] * len(positions)}
-            
-            
-            if ext_report:
-                # Depth contig report as tsv file
-                cv_dic = OrderedDict([('Total_reads_depth', data.reads_all), ('Paired_reads_depth', data.reads_pp),
-                                     ('Match_depth', data.matches), ('Mismatch_depth', data.mismatches),
-                                     ('A_depth', data['A']),
-                                     ('T_depth', data['T']), ('C_depth', data['C']), ('G_depth', data['G']),
-                                     ('N_depth', data['N']),
-                                     ('Deletion_depth', data.deletions), ('Insertion_depth', data.insertions)])
-                df_1 = pd.DataFrame(cv_dic, index=positions)
-                df_1.index.name = 'Positions'
-                out_prefix = os.path.join(out_dir, '{0}_bam_stats'.format(ctg.id))
-                df_1.to_csv(out_prefix + '.tsv', sep='\t', index=True)
-    
-                if plt_report:
-                    # Depth contig report as png plot
-                    subplots = {'reads_depth': {'data': ['Total_reads_depth', 'Paired_reads_depth'],
-                                                'param': {'loc': 221, 'ylim': ''}},
-                                'match_depth': {'data': ['Match_depth', 'Mismatch_depth'],
-                                                'param': {'loc': 222, 'ylim': ''}},
-                                'ambiguous_depth': {'data': ['N_depth'], 'param': {'loc': 223, 'ylim': ''}},
-                                'indel_depth': {'data': ['Deletion_depth', 'Insertion_depth'],
-                                                'param': {'loc': 224, 'ylim': ''}}}
-                    plt.figure(figsize=(20, 10))
-                    for plot in subplots:
-                        for key in subplots[plot]['data']:
-                            loc = subplots[plot]['param']['loc']
-                            plt.subplot(loc)
-                            values = cv_dic[key]
-                            plt.plot(positions, values, linewidth=0.5, linestyle='-', label=key, alpha=0.7)
-                        plt.legend(fontsize=12, loc=1)
-                        plt.tick_params(axis='both', which='major', labelsize=12)
-                        plt.tick_params(axis='both', which='minor', labelsize=12)
-                        plt.ylabel('Depth', fontsize=12)
-                        plt.xlabel('Positions', fontsize=12)
-                    plt.savefig(out_prefix + '.png')
-                    plt.close()
-    
-            # Extract base quality stats
-            data = pysamstats.load_baseq_ext(bam, truncate=True, pad=True, max_depth=400, fafile=fas_file,
-                                             chrom=ctg.id, start=1, end=len(ctg.seq))
-            dt['Basq'] = data.rms_baseq
-            dt['Match_basq'] = data.rms_baseq_matches
-    
-            if ext_report:
-                # Base quality report as tsv file
-                bqDic = OrderedDict(
-                    [('RMS_base_quality', data.rms_baseq), ('RMS_match_base_quality', data.rms_baseq_matches),
-                     ('RMS_mismatch_base_quality', data.rms_baseq_mismatches)])
-                df_2 = pd.DataFrame(bqDic, index=positions)
-                df_2.index.name = 'Positions'
-                out_prefix = os.path.join(out_dir, f'{ctg.id}_assembly_qual')
-                df_2.to_csv(out_prefix + '.tsv', sep='\t', index=True)
-    
-                if plt_report:
-                    # Base quality report as png plot
-                    plt.figure(figsize=(20, 5))
-                    for n, key in enumerate(bqDic):
-                        values = bqDic[key]
-                        plt.subplot(1, 3, n + 1)
-                        plt.plot(positions, values, linewidth=0.5, linestyle='-', label=key)
-                        plt.legend(fontsize=12, loc=1)
-                        # plt.ylim(0, 500)
-                        plt.tick_params(axis='both', which='major', labelsize=12)
-                        plt.tick_params(axis='both', which='minor', labelsize=12)
-                        plt.ylabel('Phred quality', fontsize=12)
-                        plt.xlabel('Positions', fontsize=12)
-                    plt.savefig(out_prefix + '.png')
-                    plt.close()
-            
-            # Extract mapping quality data
-            data = pysamstats.load_mapq(bam, truncate=True, pad=True, max_depth=400, fafile=fas_file,
-                                        chrom=ctg.id, start=1, end=len(ctg.seq))
-            dt['Mapq'] = data.rms_mapq
-            df = pd.concat([df, pd.DataFrame.from_dict(dt)])
-    
-            if ext_report:
-                # Mapping quality report as tsv file
-                mq_dic = OrderedDict([('RMS_mapq', data.rms_mapq), ('MAX_mapq', data.max_mapq),
-                                     ('Nbr_mapqO', data.reads_mapq0)])
-                df_3 = pd.DataFrame(mq_dic, index=positions)
-                df_3.index.name = 'Positions'
-                out_prefix = os.path.join(out_dir, f'{ctg.id}_assembly_mapq')
-                df_3.to_csv(out_prefix + '.tsv', sep='\t', index=True)
-    
-                if plt_report:
-                    # Mapping quality report as png plot
-                    plt.figure(figsize=(20, 20))
-                    for n, key in enumerate(mq_dic):
-                        values = mq_dic[key]
-                        plt.subplot(3, 1, n + 1)
-                        plt.plot(positions, values, linewidth=0.5, linestyle='-', label=key)
-                        plt.legend(fontsize=12, loc=1)
-                        # plt.ylim(0, 500)
-                        plt.tick_params(axis='both', which='major', labelsize=12)
-                        plt.tick_params(axis='both', which='minor', labelsize=12)
-                        if n < 2:
-                            plt.ylabel('Mapping quality', fontsize=12)
-                        else:
-                            plt.ylabel('Number of reads with mapping quality = 0', fontsize=12)
-                        plt.xlabel('Positions', fontsize=12)
-                    plt.savefig(out_prefix + '.png')
-                    plt.close()
-        """
         print(f'\nWrite the main results in {out_file}:')
         # df.boxplot(by='ctg', column=['Depth', 'Match_depth', 'Basq', 'Match_basq', 'Mapq'])
         # plt.savefig(os.path.splitext(outfile)[0]+'.png')
@@ -205,11 +89,10 @@ def extract_bam_stats(bam_file, fas_file, out_dir, ext_report, plt_report, force
             if ctg == 'overall':
                 values = df
                 res_dic['Size'] = values['Size'].sum()
-                data = values.describe(percentiles=[0.10, 0.90])
             else:
                 values = df[df['ctg'] == ctg]
                 res_dic['Size'] = df[df['ctg'] == ctg]["Size"].values[0]
-                data = values.describe(percentiles=[0.10, 0.50, 0.90])
+            data = values.describe(percentiles=[0.10, 0.50, 0.90])
             for i in ['Depth', 'Mapq']:
                 N20 = round(100 * values[values[i] >= 20].index.size / float(values.index.size), 2)
                 res_dic[f'Perc_{i}_>=20'] = N20
